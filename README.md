@@ -73,25 +73,265 @@ English (英文):
 
 ## Installation | 安裝方法
 
-### For Chrome/Edge (Developer Mode) | 適用於 Chrome/Edge（開發者模式）
+### Step 1: Download the Plugin | 步驟 1：下載外掛
 
-1. **Clone or download** this repository
-   **複製或下載**此儲存庫
+**Option A: Clone with Git | 選項 A：使用 Git 複製**
 
-2. Open `chrome://extensions/` (or `edge://extensions/`)
-   開啟 `chrome://extensions/` 或 `edge://extensions/`
+```bash
+git clone https://github.com/your-username/MyVideoDualTranscripts.git
+cd MyVideoDualTranscripts
+```
 
-3. Enable **Developer Mode** (top-right toggle)
-   啟用**開發者模式**（右上角切換）
+**Option B: Download as ZIP | 選項 B：下載為 ZIP**
 
-4. Click **Load unpacked**
-   點擊**載入未封裝項目**
+1. Click the **Code** button (綠色按鈕) on GitHub
+   點擊 GitHub 上的 **Code** 按鈕
 
-5. Select this plugin directory
-   選擇此外掛目錄
+2. Select **Download ZIP** (下載 ZIP)
+   選擇 **Download ZIP**
 
-6. Visit [myVideo](https://www.myvideo.net.tw) and start watching!
-   訪問 [myVideo](https://www.myvideo.net.tw) 並開始觀看！
+3. Extract the folder to a location you can remember (e.g., `D:\Plugins\MyVideoDualTranscripts`)
+   將資料夾解壓到你記得的位置（例如 `D:\Plugins\MyVideoDualTranscripts`）
+
+---
+
+### Step 2: Open Extensions Page | 步驟 2：開啟延伸功能頁面
+
+**For Chrome | Chrome 用戶：**
+
+1. Open Chrome browser
+   開啟 Chrome 瀏覽器
+
+2. Click the **Menu** (三個點) in top-right corner
+   點擊右上角的**菜單**（三個點）
+
+3. Select **More tools** → **Extensions**
+   選擇 **More tools** → **Extensions**
+
+4. Or paste this in address bar: `chrome://extensions/`
+   或在網址列貼上：`chrome://extensions/`
+
+**For Edge | Edge 用戶：**
+
+1. Open Edge browser
+   開啟 Edge 瀏覽器
+
+2. Click the **Menu** (三個點) in top-right corner
+   點擊右上角的**菜單**（三個點）
+
+3. Select **Extensions** → **Manage extensions**
+   選擇 **Extensions** → **Manage extensions**
+
+4. Or paste this in address bar: `edge://extensions/`
+   或在網址列貼上：`edge://extensions/`
+
+---
+
+### Step 3: Enable Developer Mode | 步驟 3：啟用開發者模式
+
+1. Look at the **top-right corner** of the extensions page
+   查看延伸功能頁面的**右上角**
+
+2. Find the toggle for **Developer Mode** (開發者模式)
+   找到**開發者模式**的切換開關
+
+3. **Click to enable it** (切換為藍色/開啟)
+   **點擊啟用它**（應該變成藍色）
+
+**Visual Guide | 視覺指南：**
+
+```
+┌─────────────────────────────────────────┐
+│  Extensions / 延伸功能                  │
+├─────────────────────────────────────────┤
+│                          [Developer Mode]  ← Click here! / 點這裡！
+│                              ▣ (toggle to ON)
+└─────────────────────────────────────────┘
+```
+
+---
+
+### Step 4: Load the Plugin | 步驟 4：載入外掛
+
+1. After enabling Developer Mode, new buttons appear
+   啟用開發者模式後，會出現新按鈕
+
+2. Click the **Load unpacked** button (載入未封裝項目)
+   點擊**載入未封裝項目**按鈕
+
+3. A file browser will open
+   會開啟檔案瀏覽器
+
+4. Navigate to your plugin folder (e.g., `D:\Plugins\MyVideoDualTranscripts`)
+   導航到你的外掛資料夾（例如 `D:\Plugins\MyVideoDualTranscripts`）
+
+5. Select the folder and click **Select Folder**
+   選擇資料夾並點擊 **Select Folder**
+
+**What you should see | 你應該看到的：**
+
+```
+✅ After loading successfully:
+   - Plugin appears in the extensions list
+   - Icon shows in toolbar (top-right)
+   - Plugin name: "myVideo Dual Transcript (V4.0 Passive Stable)"
+
+✅ 成功載入後：
+   - 外掛出現在延伸功能清單中
+   - 圖示顯示在工具列（右上角）
+   - 外掛名稱："myVideo Dual Transcript (V4.0 Passive Stable)"
+```
+
+---
+
+### Step 5: Start Using | 步驟 5：開始使用
+
+1. **Visit myVideo**
+   訪問 [myVideo](https://www.myvideo.net.tw)
+
+2. **Play a video with subtitles**
+   播放有字幕的視訊
+
+3. **Click the plugin icon** in your toolbar (top-right)
+   點擊工具列中的外掛圖示（右上角）
+
+4. **Select your subtitle mode** from the popup
+   從彈出視窗選擇你的字幕模式：
+   - **關閉外掛** - Use original myVideo subtitles / 使用原廠字幕
+   - **英文** - English only / 僅英文
+   - **英文 / 中文** - English on top, Chinese below / 英文上、中文下
+   - **中文 / 英文** - Chinese on top, English below / 中文上、英文下
+
+5. **Enjoy your dual subtitles!** 🎬
+   享受雙語字幕！
+
+---
+
+## Troubleshooting Installation | 安裝疑難排解
+
+### Problem 1: "Load unpacked" button doesn't appear | 問題 1：「載入未封裝項目」按鈕不出現
+
+**Solution | 解決方案：**
+
+- Make sure **Developer Mode is ON** (toggle should be blue)
+  確保**開發者模式已開啟**（切換應該是藍色）
+
+- Try refreshing the page (F5)
+  嘗試重新整理頁面 (F5)
+
+- Restart your browser
+  重新啟動瀏覽器
+
+---
+
+### Problem 2: "Cannot find manifest.json" error | 問題 2：「找不到 manifest.json」錯誤
+
+**Solution | 解決方案：**
+
+- Make sure you selected the correct folder containing:
+  確保你選擇的資料夾包含：
+  ```
+  ✓ manifest.json
+  ✓ popup.html
+  ✓ popup.js
+  ✓ content_script.js
+  ✓ background.js
+  ✓ styles.css
+  ```
+
+- Don't select a parent folder - select the **MyVideoDualTranscripts** folder itself
+  不要選擇父資料夾 - 選擇 **MyVideoDualTranscripts** 資料夾本身
+
+---
+
+### Problem 3: Plugin loads but no subtitles appear | 問題 3：外掛已載入但沒有字幕出現
+
+**Solution | 解決方案：**
+
+1. Make sure the video has subtitles
+   確保視訊有字幕
+
+2. Check if original myVideo subtitles work first
+   先檢查原廠 myVideo 字幕是否正常
+
+3. Open DevTools (F12) and check console for errors
+   開啟開發者工具 (F12) 並檢查控制台是否有錯誤
+
+4. Try clicking the plugin icon and changing modes
+   嘗試點擊外掛圖示並更改模式
+
+---
+
+### Problem 4: Plugin icon doesn't appear in toolbar | 問題 4：工具列中沒有外掛圖示
+
+**Solution | 解決方案：**
+
+- Click the **Extensions icon** (拼圖片) in your toolbar
+  點擊工具列中的**延伸功能圖示**（拼圖片）
+
+- Find "myVideo Dual Transcript"
+  找到「myVideo Dual Transcript」
+
+- Click the **pin icon** to pin it to your toolbar
+  點擊**釘選圖示**以將其釘選到工具列
+
+---
+
+### Problem 5: Getting permission errors | 問題 5：收到權限錯誤
+
+**Solution | 解決方案：**
+
+The extension needs these permissions:
+外掛需要這些權限：
+
+- `scripting` - To inject subtitle code / 注入字幕程式碼
+- `storage` - To save your preferences / 儲存你的偏好設定
+- `webRequest` - To detect subtitles / 偵測字幕
+
+These are safe and necessary. Click **Allow** when prompted.
+這些是安全必需的。出現提示時點擊 **Allow**。
+
+---
+
+## Updating the Plugin | 更新外掛
+
+### How to update to the latest version | 如何更新到最新版本
+
+1. Download the latest version from GitHub
+   從 GitHub 下載最新版本
+
+2. Go to `chrome://extensions/`
+   前往 `chrome://extensions/`
+
+3. Find "myVideo Dual Transcript" in the list
+   在清單中找到「myVideo Dual Transcript」
+
+4. Click the **Reload** icon (circular arrow)
+   點擊**重新載入**圖示（圓形箭頭）
+
+5. Done! The plugin is now updated.
+   完成！外掛現已更新。
+
+---
+
+## Uninstall | 卸載
+
+### How to remove the plugin | 如何移除外掛
+
+1. Go to `chrome://extensions/` (or `edge://extensions/`)
+   前往 `chrome://extensions/` 或 `edge://extensions/`
+
+2. Find "myVideo Dual Transcript"
+   找到「myVideo Dual Transcript」
+
+3. Click the **Remove** button (or trash icon)
+   點擊**移除**按鈕（或垃圾桶圖示）
+
+4. Confirm when asked
+   出現確認時點擊確認
+
+Original myVideo subtitles will work normally after uninstall.
+卸載後原廠 myVideo 字幕將正常運作。
 
 ## Usage | 使用方法
 
