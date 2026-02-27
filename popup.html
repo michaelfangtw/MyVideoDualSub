@@ -10,39 +10,17 @@
     .radio-option:hover { background-color: #f0f0f0; }
     .radio-option input[type="radio"] { margin-right: 12px; accent-color: #2196F3; cursor: pointer; }
     .label-txt { font-size: 14px; color: #333; }
-    /* 為雙語選項增加一點視覺提示 */
     .dual-label { color: #2196F3; font-weight: 500; }
   </style>
 </head>
 <body>
   <h3>myVideo 字幕模式</h3>
-  
   <div class="radio-group">
-    <!-- 選項 1: 關閉外掛 -->
-    <label class="radio-option">
-      <input type="radio" name="mode" value="disabled">
-      <span class="label-txt">關閉外掛 (使用原廠)</span>
-    </label>
-
-    <!-- 選項 2: 英文 (單語) -->
-    <label class="radio-option">
-      <input type="radio" name="mode" value="eng_only">
-      <span class="label-txt">英文</span>
-    </label>
-
-    <!-- 選項 3: 英文 / 中文 (雙語) -->
-    <label class="radio-option">
-      <input type="radio" name="mode" value="eng_zho">
-      <span class="label-txt dual-label">英文 / 中文 (雙語)</span>
-    </label>
-
-    <!-- 選項 4: 中文 / 英文 (雙語) -->
-    <label class="radio-option">
-      <input type="radio" name="mode" value="zho_eng">
-      <span class="label-txt dual-label">中文 / 英文 (雙語)</span>
-    </label>
+    <label class="radio-option"><input type="radio" name="mode" value="disabled"><span class="label-txt">關閉外掛 (使用原廠)</span></label>
+    <label class="radio-option"><input type="radio" name="mode" value="eng_only"><span class="label-txt">英文</span></label>
+    <label class="radio-option"><input type="radio" name="mode" value="eng_zho"><span class="label-txt dual-label">英文 / 中文 (雙語)</span></label>
+    <label class="radio-option"><input type="radio" name="mode" value="zho_eng"><span class="label-txt dual-label">中文 / 英文 (雙語)</span></label>
   </div>
-
   <script src="popup.js"></script>
 </body>
 </html>

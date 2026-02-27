@@ -1,5 +1,5 @@
-// content_script.js (V4.0 Radio Mode Logic)
-console.log("[Dual Subtitle] Content script loaded (V4.0 Radio Mode).");
+// content_script.js (V4.0 Passive Radio Mode)
+console.log("[Dual Subtitle] Content script loaded (Passive V4.0).");
 
 let fullSubtitles = [];
 let videoElement = null;
@@ -41,6 +41,7 @@ function applyModeSettings() {
         teardown();
     } else {
         console.log("[Content] Mode is ENABLED. Setting up...");
+        // 加入 class 以隱藏原廠字幕
         document.body.classList.add('myvideo-dual-sub-active');
         setupListeners();
         initializeSubtitleDisplay();
@@ -59,6 +60,7 @@ function teardown() {
     }
     if (subtitleContainer) { subtitleContainer.style.display = 'none'; subtitleContainer.innerHTML = ''; }
     fullSubtitles = [];
+    // 移除 class 以恢復原廠字幕
     document.body.classList.remove('myvideo-dual-sub-active');
 }
 
@@ -69,28 +71,32 @@ const messageHandler = (request, sender, sendResponse) => {
         if (url === lastProcessedUrl && fullSubtitles.length > 0) return;
         lastProcessedUrl = url;
         window.lastRawData = { data, url, langCode };
-        console.log(`[Content] 📥 Received ${langCode.toUpperCase()} data. Processing for mode: ${settings.subtitleMode}`);
+        console.log(`[Content] 📥 Received subtitle data. Processing for mode: ${settings.subtitleMode}`);
         processReceivedSubtitle(data, url, langCode);
     }
 };
 
 
-// --- 2. 核心處理邏輯 (【關鍵修改點】) ---
+// --- 2. 核心處理邏輯 ---
 function processReceivedSubtitle(data, url, langCode) {
     const primaryTracks = parseVTT(data);
     if (primaryTracks.length === 0) return;
     fullSubtitles = []; updateSubtitleDisplay(0);
 
-    // 準備抓取另一種語言的網址
-    const counterpartLangCode = (langCode === 'zho') ? 'eng' : 'zho';
-    const counterpartUrl = url.replace(`/text_${langCode}_`, `/text_${counterpartLangCode}_`);
+    // 判斷攔截到的是哪種語言，並準備抓取另一種
+    let currentIsZh = langCode === 'zho' || url.includes('_zho_');
+    const currentLangCode = currentIsZh ? 'zho' : 'eng';
+    const counterpartLangCode = currentIsZh ? 'eng' : 'zho';
+    // 嘗試猜測另一種語言的網址
+    const counterpartUrl = url.replace(`_${currentLangCode}_`, `_${counterpartLangCode}_`);
 
-    // 總是嘗試抓取另一種語言，以便同時擁有中英資料
+    // 總是嘗試抓取另一種語言
+    console.log(`[Content] Attempting to fetch counterpart (${counterpartLangCode})...`);
     chrome.runtime.sendMessage({ action: "TRY_FETCH_URL", url: counterpartUrl }, (response) => {
         let zhoTracks = [], engTracks = [];
 
         // 分配中英軌道資料
-        if (langCode === 'zho') {
+        if (currentIsZh) {
             zhoTracks = primaryTracks;
             if (response && response.success) engTracks = parseVTT(response.data);
         } else {
@@ -115,11 +121,6 @@ function processReceivedSubtitle(data, url, langCode) {
                 // 中文在上(text)，英文在下(translation)
                 fullSubtitles = mergeTracks(zhoTracks, engTracks);
                 break;
-            
-            case 'disabled':
-                // 理論上不會執行到這裡
-                fullSubtitles = [];
-                break;
         }
         
         initializeSubtitleDisplay();
@@ -127,19 +128,20 @@ function processReceivedSubtitle(data, url, langCode) {
 }
 
 
-// --- 輔助與 UI 函數 ---
-// 合併函數修改：合併主/副軌道
+// --- 輔助與 UI 函數 (保持不變) ---
 function mergeTracks(main, sub) {
-    // 如果主軌道沒資料，直接返回空陣列
     if (main.length === 0) return [];
-    
+    // 如果副軌道沒資料，就只顯示主軌道
+    if (sub.length === 0) {
+        return main.map(item => ({ start: item.start, end: item.end, text: item.text, translation: '' }));
+    }
     return main.map(mItem => {
         const sItem = sub.find(si => (si.start < mItem.end && si.end > mItem.start) && Math.abs(si.start - mItem.start) < 0.5);
         return { start: mItem.start, end: mItem.end, text: mItem.text, translation: sItem ? sItem.text : '' };
     });
 }
 
-// (以下 UI 相關函數與 styles.css 配合， text 永遠在上方(sub-cn樣式)， translation 在下方(sub-en樣式))
+// (UI, VTT解析, DOM觀察函數與之前相同，請複製完整版)
 function createSubtitleContainer() { if (document.getElementById('myvideo-dual-subtitle-container')) return; subtitleContainer = document.createElement('div'); subtitleContainer.id = 'myvideo-dual-subtitle-container'; document.body.appendChild(subtitleContainer); }
 function updateSubtitleDisplay(c) { if (!subtitleContainer || settings.subtitleMode === 'disabled') return; const s = fullSubtitles.find(sub => c >= (sub.start - 0.1) && c <= sub.end); if (s && (s.text || s.translation)) { const zh = s.text || '&nbsp;'; const en = s.translation || '&nbsp;'; if (zh === '&nbsp;' && en === '&nbsp;') { subtitleContainer.style.display = 'none'; return; } const h = `<div class="sub-pair"><div class="sub-cn">${zh}</div><div class="sub-en">${en}</div></div>`; if (subtitleContainer.innerHTML !== h) { subtitleContainer.innerHTML = h; subtitleContainer.style.display = 'block'; } } else { subtitleContainer.style.display = 'none'; } }
 function videoTimeUpdateHandler() { if (videoElement && fullSubtitles.length > 0) updateSubtitleDisplay(videoElement.currentTime); }

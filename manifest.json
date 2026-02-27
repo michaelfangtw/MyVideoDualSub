@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "myVideo Dual Transcript (With Settings)",
-  "version": "3.0.0",
-  "description": "適用於 Edge 的 myVideo 中英雙語字幕外掛 (含設定介面)。",
+  "name": "myVideo Dual Transcript (V4.0 Passive Stable)",
+  "version": "4.0.1",
+  "description": "被動監聽版：需手動觸發原廠字幕。支援單選模式與原廠字幕隱藏。",
   "permissions": [
     "scripting",
     "storage",
@@ -14,7 +14,6 @@
   "background": {
     "service_worker": "background.js"
   },
-  // 【新增】定義彈出視窗
   "action": {
     "default_popup": "popup.html",
     "default_title": "myVideo 字幕設定"
