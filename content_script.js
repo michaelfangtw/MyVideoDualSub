@@ -278,13 +278,14 @@ function processReceivedSubtitle(data, url, langCode) {
 
             case 'eng_zho_translate':
                 // 英文在上(text)，中文翻譯或原文在下(translation)
+                console.log(`[Content] eng_zho_translate: engTracks=${engTracks.length}, zhoTracks=${zhoTracks.length}`);
                 if (engTracks.length > 0 && zhoTracks.length > 0) {
                     // 兩種都有，直接合併
                     fullSubtitles = mergeTracks(engTracks, zhoTracks);
                     console.log(`[Content] eng_zho_translate: merged ${fullSubtitles.length} subtitles (both available)`);
                 } else if (engTracks.length > 0) {
                     // 只有英文，翻譯英文為中文
-                    console.log(`[Content] eng_zho_translate: translating English to Chinese...`);
+                    console.log(`[Content] eng_zho_translate: translating English to Chinese (${engTracks.length} subtitles)...`);
                     chrome.runtime.sendMessage(
                         { action: "TRANSLATE_SUBTITLES", subtitles: engTracks, sourceLang: 'eng' },
                         (response) => {
@@ -307,7 +308,7 @@ function processReceivedSubtitle(data, url, langCode) {
                     return;
                 } else if (zhoTracks.length > 0) {
                     // 只有中文，翻譯中文為英文
-                    console.log(`[Content] eng_zho_translate: translating Chinese to English...`);
+                    console.log(`[Content] eng_zho_translate: translating Chinese to English (${zhoTracks.length} subtitles)...`);
                     chrome.runtime.sendMessage(
                         { action: "TRANSLATE_SUBTITLES", subtitles: zhoTracks, sourceLang: 'zho' },
                         (response) => {
