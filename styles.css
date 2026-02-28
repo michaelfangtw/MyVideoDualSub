@@ -75,21 +75,38 @@
     text-shadow: 0 4px 18px rgba(0, 0, 0, 0.95), 0 0 26px rgba(255, 255, 0, 0.8), 0 0 12px rgba(0, 0, 0, 0.85);
 }
 
-/* Advanced Word Styling - 高頻單字標記 */
+/* Advanced Word Styling - 高頻單字標記 (雙層級別) */
 .advanced-word {
     cursor: pointer;
-    border-bottom: 2px solid rgba(255, 235, 59, 0.8);
     text-decoration: none;
     transition: all 0.2s ease;
     position: relative;
     font-weight: 600;
-    color: #FFFF00;
 }
 
-.advanced-word:hover {
+/* Tier 1 (3000-5000): 雙星 ** - Advanced (B2-C1) 黃色 */
+.advanced-word.tier1 {
+    color: #FFFF00;
+    border-bottom: 2px solid rgba(255, 235, 59, 0.8);
+}
+
+.advanced-word.tier1:hover {
     border-bottom-color: #FFEB3B;
     filter: brightness(1.15);
     background: rgba(255, 235, 59, 0.1);
+    padding: 0 2px;
+    border-radius: 2px;
+}
+
+.advanced-word.tier2 {
+    color: #00D4FF;
+    border-bottom: 2px dotted rgba(0, 212, 255, 0.6);
+}
+
+.advanced-word.tier2:hover {
+    border-bottom-color: #00D4FF;
+    filter: brightness(1.15);
+    background: rgba(0, 212, 255, 0.1);
     padding: 0 2px;
     border-radius: 2px;
 }

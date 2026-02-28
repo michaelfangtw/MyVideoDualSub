@@ -138,6 +138,51 @@ const ADVANCED_WORDS = {
             "The word 'television' derives from Greek.",
             "We derive energy from food."
         ]
+    },
+    "exemplify": {
+        rank: 5041,
+        level: "C1",
+        definition: "to be a typical example of",
+        examples: [
+            "This exemplifies the problem perfectly.",
+            "His work exemplifies excellence."
+        ]
+    },
+    "exhilarate": {
+        rank: 5056,
+        level: "C1",
+        definition: "to make cheerful and excited",
+        examples: [
+            "The victory exhilarated the team.",
+            "Fresh air exhilarates the mind."
+        ]
+    },
+    "exigent": {
+        rank: 5064,
+        level: "C1",
+        definition: "demanding urgent attention",
+        examples: [
+            "An exigent situation requires immediate action.",
+            "Exigent circumstances justified the delay."
+        ]
+    },
+    "existential": {
+        rank: 5072,
+        level: "C1",
+        definition: "relating to human existence",
+        examples: [
+            "An existential crisis affects many people.",
+            "Existential questions about meaning."
+        ]
+    },
+    "exonerate": {
+        rank: 5076,
+        level: "C1",
+        definition: "to free from blame",
+        examples: [
+            "The evidence exonerates him completely.",
+            "The investigation exonerated the suspect."
+        ]
     }
 };
 
@@ -215,8 +260,16 @@ function markAdvancedWords(text) {
     return text.replace(/\b([a-z'-]+)\b/gi, (match) => {
         if (isAdvancedWord(match)) {
             const word = match.toLowerCase();
+            const wordInfo = getWordInfo(word);
             const wiktionaryUrl = `https://en.wiktionary.org/wiki/${encodeURIComponent(word)}`;
-            return `<span class="advanced-word" data-word="${word}" title="Click to view definition" onclick="window.open('${wiktionaryUrl}', '_blank')" style="cursor: pointer;">${match}*</span>`;
+
+            // Tier 1 (3000-5000): ** 雙星 - Advanced (B2-C1)
+            // Tier 2 (5000+): * 單星 - Expert (C1-C2)
+            const isTier2 = wordInfo && wordInfo.rank >= 5000;
+            const mark = isTier2 ? '*' : '**';
+            const tier = isTier2 ? 'tier2' : 'tier1';
+
+            return `<span class="advanced-word ${tier}" data-word="${word}" title="Advanced word (${isTier2 ? 'Expert *' : 'Advanced **'})" onclick="window.open('${wiktionaryUrl}', '_blank')">${match}${mark}</span>`;
         }
         return match;
     });
