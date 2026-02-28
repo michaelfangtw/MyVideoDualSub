@@ -290,11 +290,16 @@ function processReceivedSubtitle(data, url, langCode) {
                         (response) => {
                             if (response && response.translatedSubtitles) {
                                 fullSubtitles = response.translatedSubtitles;
+                                // If translation is empty, show placeholder
+                                fullSubtitles = fullSubtitles.map(item => ({
+                                    ...item,
+                                    translation: item.translation || '🤖 AI翻譯 ----------'
+                                }));
                                 console.log(`[Content] eng_zho_translate: showing ${fullSubtitles.length} subtitles (translated)`);
                                 initializeSubtitleDisplay();
                             } else {
                                 console.warn(`[Content] Translation failed`);
-                                fullSubtitles = engTracks.map(item => ({ start: item.start, end: item.end, text: item.text, translation: '' }));
+                                fullSubtitles = engTracks.map(item => ({ start: item.start, end: item.end, text: item.text, translation: '🤖 AI翻譯 ----------' }));
                                 initializeSubtitleDisplay();
                             }
                         }
@@ -310,14 +315,14 @@ function processReceivedSubtitle(data, url, langCode) {
                                 fullSubtitles = response.translatedSubtitles.map(item => ({
                                     start: item.start,
                                     end: item.end,
-                                    text: item.translation, // 英文翻譯放在上面
+                                    text: item.translation || '🤖 AI翻譯 ----------', // 英文翻譯放在上面，失敗顯示佔位符
                                     translation: item.text // 原始中文放在下面
                                 }));
                                 console.log(`[Content] eng_zho_translate: showing ${fullSubtitles.length} subtitles (translated)`);
                                 initializeSubtitleDisplay();
                             } else {
                                 console.warn(`[Content] Translation failed`);
-                                fullSubtitles = zhoTracks.map(item => ({ start: item.start, end: item.end, text: item.text, translation: '' }));
+                                fullSubtitles = zhoTracks.map(item => ({ start: item.start, end: item.end, text: '🤖 AI翻譯 ----------', translation: item.text }));
                                 initializeSubtitleDisplay();
                             }
                         }
