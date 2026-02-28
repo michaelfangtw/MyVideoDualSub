@@ -103,11 +103,22 @@ function processReceivedSubtitle(data, url, langCode) {
     fullSubtitles = []; updateSubtitleDisplay(0);
 
     // 判斷攔截到的是哪種語言，並準備抓取另一種
-    let currentIsZh = langCode === 'zho' || url.includes('_zho_');
+    let currentIsZh = langCode === 'zho' || url.includes('_zho_') || url.includes('/text_0/');
     const currentLangCode = currentIsZh ? 'zho' : 'eng';
     const counterpartLangCode = currentIsZh ? 'eng' : 'zho';
+
     // 嘗試猜測另一種語言的網址
-    const counterpartUrl = url.replace(`_${currentLangCode}_`, `_${counterpartLangCode}_`);
+    let counterpartUrl;
+    if (url.includes('/text_0/')) {
+        // myVideo format: text_0 is Chinese, try text_1 for English
+        counterpartUrl = url.replace('/text_0/', '/text_1/');
+    } else if (url.includes('/text_1/')) {
+        // myVideo format: text_1 is English, try text_0 for Chinese
+        counterpartUrl = url.replace('/text_1/', '/text_0/');
+    } else {
+        // Old format: use _zho_ / _eng_
+        counterpartUrl = url.replace(`_${currentLangCode}_`, `_${counterpartLangCode}_`);
+    }
 
     console.log(`[Content] 🔍 Language detection: langCode=${langCode}, currentIsZh=${currentIsZh}, currentLangCode=${currentLangCode}`);
     console.log(`[Content] 🔗 Original: ${url}`);

@@ -26,6 +26,8 @@ chrome.webRequest.onCompleted.addListener(
             let langCode = 'unknown';
             if (details.url.includes('_zho_')) langCode = 'zho';
             else if (details.url.includes('_eng_')) langCode = 'eng';
+            else if (details.url.includes('/text_0/')) langCode = 'zho'; // myVideo format: text_0 = Chinese
+            else if (details.url.includes('/text_1/')) langCode = 'eng'; // myVideo format: text_1 = English
 
             console.log("[Background] 🔤 Language code:", langCode);
 
