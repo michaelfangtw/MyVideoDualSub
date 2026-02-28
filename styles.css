@@ -50,7 +50,7 @@ body[data-subtitle-mode="zho"] .sub-pair {
     font-family: 'Noto Sans TC', -apple-system, sans-serif;
 }
 
-/* 中文行樣式 - 翻譯版 (機器翻譯) - 白色 */
+/* 中文行樣式 - 翻譯版 (機器翻譯) - 白色 + 標楷體 */
 .sub-cn-translate {
     font-size: 28px;
     color: #FFFFFF; /* 白色 */
@@ -59,7 +59,7 @@ body[data-subtitle-mode="zho"] .sub-pair {
     margin-bottom: 6px;
     line-height: 1.35;
     letter-spacing: 0.3px;
-    font-family: 'Noto Sans TC', -apple-system, sans-serif;
+    font-family: 'DFKai-SB', '標楷體', 'KaiTi', cursive, sans-serif;
 }
 
 /* 英文行樣式 (永遠在下方) - 黃色 */
@@ -115,6 +115,7 @@ body[data-subtitle-mode="eng_zho_translate"] #myvideo-dual-subtitle-container {
     font-size: 40px;
     letter-spacing: 0.4px;
     text-shadow: 0 4px 18px rgba(0, 0, 0, 0.95), 0 0 26px rgba(255, 255, 255, 0.6), 0 0 12px rgba(0, 0, 0, 0.85);
+    font-family: 'DFKai-SB', '標楷體', 'KaiTi', cursive, sans-serif;
 }
 :fullscreen .sub-en,
 :-webkit-full-screen .sub-en {
