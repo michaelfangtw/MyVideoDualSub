@@ -395,16 +395,29 @@ function updateSubtitleDisplay(c) {
         }
 
         // Conditionally render only necessary subtitle divs
-        // English always on top, Chinese always on bottom
+        // Render order depends on mode: Chinese-first modes show Chinese on top
         let h = '<div class="sub-pair">';
-        if (en !== '&nbsp;') {
-            h += `<div class="sub-en">${en}</div>`;
-        }
-        if (zh !== '&nbsp;') {
-            // Use different class for translated Chinese (white color) vs original Chinese (blue)
-            const isTranslated = settings.subtitleMode === 'eng_zho_translate' || settings.subtitleMode === 'zho_eng_translate';
-            const cnClass = isTranslated ? 'sub-cn-translate' : 'sub-cn';
-            h += `<div class="${cnClass}">${zh}</div>`;
+
+        // zho_eng and zho_eng_translate: Chinese on top, English on bottom
+        if (settings.subtitleMode === 'zho_eng' || settings.subtitleMode === 'zho_eng_translate') {
+            if (zh !== '&nbsp;') {
+                const isTranslated = settings.subtitleMode === 'zho_eng_translate';
+                const cnClass = isTranslated ? 'sub-cn-translate' : 'sub-cn';
+                h += `<div class="${cnClass}">${zh}</div>`;
+            }
+            if (en !== '&nbsp;') {
+                h += `<div class="sub-en">${en}</div>`;
+            }
+        } else {
+            // eng_zho, eng_zho_translate, and single modes: English on top, Chinese on bottom
+            if (en !== '&nbsp;') {
+                h += `<div class="sub-en">${en}</div>`;
+            }
+            if (zh !== '&nbsp;') {
+                const isTranslated = settings.subtitleMode === 'eng_zho_translate';
+                const cnClass = isTranslated ? 'sub-cn-translate' : 'sub-cn';
+                h += `<div class="${cnClass}">${zh}</div>`;
+            }
         }
         h += '</div>';
 
