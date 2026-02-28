@@ -137,7 +137,11 @@ function translateTextsWithLibreTranslate(texts, sourceCode, targetCode) {
         format: 'text'
     };
 
-    console.log(`[Background] 📤 Sending request to LibreTranslate: ${texts.length} texts`);
+    console.log(`[Background] 📤 Calling LibreTranslate API...`);
+    console.log(`[Background] 📝 URL: ${apiUrl}`);
+    console.log(`[Background] 📝 Texts to translate: ${texts.length}`);
+    console.log(`[Background] 📝 Source: ${sourceCode}, Target: ${targetCode}`);
+    console.log(`[Background] 📝 Payload: ${JSON.stringify(payload).substring(0, 100)}...`);
 
     return fetch(apiUrl, {
         method: 'POST',
@@ -145,12 +149,14 @@ function translateTextsWithLibreTranslate(texts, sourceCode, targetCode) {
         headers: { 'Content-Type': 'application/json' }
     })
     .then(res => {
+        console.log(`[Background] 📥 API Response Status: ${res.status} ${res.statusText}`);
         if (!res.ok) {
             throw new Error(`LibreTranslate API error: ${res.status} ${res.statusText}`);
         }
         return res.json();
     })
     .then(data => {
+        console.log(`[Background] 📥 Received data:`, data);
         if (!data.translatedText) {
             throw new Error('No translation returned');
         }
@@ -158,6 +164,11 @@ function translateTextsWithLibreTranslate(texts, sourceCode, targetCode) {
         const translatedTexts = data.translatedText.split('\n|||SEP|||\n');
         console.log(`[Background] ✅ LibreTranslate response received: ${translatedTexts.length} texts`);
         console.log(`[Background] 📝 First translation sample: ${translatedTexts[0]?.substring(0, 80) || '(empty)'}`);
+        console.log(`[Background] 📝 All translations:`, translatedTexts);
         return translatedTexts;
+    })
+    .catch(err => {
+        console.error(`[Background] ❌ LibreTranslate API Error:`, err);
+        throw err;
     });
 }
