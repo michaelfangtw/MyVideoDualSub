@@ -416,7 +416,8 @@ function updateSubtitleDisplay(c) {
             if (zh !== '&nbsp;') {
                 const isTranslated = settings.subtitleMode === 'eng_zho_translate';
                 const cnClass = isTranslated ? 'sub-cn-translate' : 'sub-cn';
-                h += `<div class="${cnClass}">${zh}</div>`;
+                const icon = isTranslated ? '🤖 ' : '';
+                h += `<div class="${cnClass}">${icon}${zh}</div>`;
             }
         }
         h += '</div>';
