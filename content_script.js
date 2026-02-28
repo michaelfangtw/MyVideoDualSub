@@ -160,7 +160,7 @@ function processReceivedSubtitle(data, url, langCode) {
                 fullSubtitles = engTracks.length > 0
                     ? engTracks.map(item => ({ start: item.start, end: item.end, text: item.text, translation: '' }))
                     : [];
-                console.log(`[Content] eng: showing ${fullSubtitles.length} English subtitles (no fallback to Chinese)`);
+                console.log(`[Content] ✅ eng mode: showing ${fullSubtitles.length} English subtitles (text field contains English, translation='')`, fullSubtitles.length > 0 ? fullSubtitles[0] : 'N/A');
                 break;
 
             case 'zho':
@@ -399,6 +399,9 @@ function updateSubtitleDisplay(c) {
             h += `<div class="sub-en">${en}</div>`;
         }
         h += '</div>';
+
+        console.log(`[updateSubtitleDisplay] mode=${settings.subtitleMode}, zh="${zh.substring(0,30)}", en="${en.substring(0,30)}"`);
+
         if (subtitleContainer.innerHTML !== h) {
             subtitleContainer.innerHTML = h;
             subtitleContainer.style.display = 'block';
