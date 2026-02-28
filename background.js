@@ -7,45 +7,76 @@ let processedUrls = new Set();
 chrome.webRequest.onCompleted.addListener(
     function(details) {
         // 篩選出字幕請求 (包含 /text_ 且結尾是 .vtt)
-        // 這裡使用更寬鬆的條件，不限制一定是 text_zho 或 text_eng，只要符合結構就抓
+        // 支援多種 CDN：vodstrm.myvideo.net.tw 和第三方 CDN
         if (details.url.includes('/text_') && details.url.endsWith('.vtt')) {
-            
+
             // 如果這個網址最近已經處理過，就跳過
-            if (processedUrls.has(details.url)) return;
+            if (processedUrls.has(details.url)) {
+                console.log("[Background] ⏭️  Skipping already processed URL");
+                return;
+            }
             processedUrls.add(details.url);
             // 10秒後清除緩存，允許再次處理
             setTimeout(() => processedUrls.delete(details.url), 10000);
 
             console.log("[Background] 🕵️ Detected VTT request:", details.url);
-            
+            console.log("[Background] Status:", details.statusCode);
+
             // 判斷語言代碼 (如果有的話)
             let langCode = 'unknown';
             if (details.url.includes('_zho_')) langCode = 'zho';
             else if (details.url.includes('_eng_')) langCode = 'eng';
 
+            console.log("[Background] 🔤 Language code:", langCode);
+
             // 主動抓取字幕內容並發送給前台
             fetchSubtitleData(details.url, langCode, details.tabId);
         }
     },
-    { urls: ["https://*.myvideo.net.tw/*"] }
+    { urls: ["https://*.myvideo.net.tw/*", "https://*.cdn.tfn.net.tw/*", "https://vodstrm.myvideo.net.tw/*"] }
 );
 
 // 主動抓取字幕並發送給 content script
 function fetchSubtitleData(url, langCode, tabId) {
-    console.log(`[Background] Fetching content for track...`);
+    console.log(`[Background] 📥 Fetching ${langCode} subtitle:`, url);
+    console.log(`[Background] TabID: ${tabId}`);
+
     fetch(url)
-        .then(response => response.text())
-        .then(data => {
-            if (tabId !== -1) {
-                chrome.tabs.sendMessage(tabId, {
-                    action: "SUBTITLE_DATA_RECEIVED",
-                    url: url,
-                    data: data,
-                    langCode: langCode
-                });
+        .then(response => {
+            console.log(`[Background] ✅ Response received (${langCode}): ${response.status} ${response.statusText}`);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
             }
+            return response.text();
         })
-        .catch(err => console.error("[Background] Fetch failed:", err));
+        .then(data => {
+            if (!data || data.length === 0) {
+                throw new Error('Empty response');
+            }
+            console.log(`[Background] 📄 Data received (${langCode}): ${data.length} bytes`);
+            console.log(`[Background] First 50 chars: ${data.substring(0, 50)}`);
+
+            if (!tabId || tabId === -1) {
+                console.warn(`[Background] ⚠️ Invalid tabId: ${tabId}`);
+                return;
+            }
+
+            chrome.tabs.sendMessage(tabId, {
+                action: "SUBTITLE_DATA_RECEIVED",
+                url: url,
+                data: data,
+                langCode: langCode
+            }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.error(`[Background] ❌ Message send error (${langCode}):`, chrome.runtime.lastError.message);
+                } else {
+                    console.log(`[Background] ✅ Message sent (${langCode}) to tabId ${tabId}`);
+                }
+            });
+        })
+        .catch(err => {
+            console.error(`[Background] ❌ Fetch error (${langCode}): ${err.message}`);
+        });
 }
 
 

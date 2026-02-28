@@ -64,15 +64,30 @@ function teardown() {
     document.body.classList.remove('myvideo-dual-sub-active');
 }
 
-const messageHandler = (request, sender, sendResponse) => {
-    if (settings.subtitleMode === 'disabled') return;
+const messageHandler = (request, _sender, sendResponse) => {
+    console.log(`[Content] 📨 Message received:`, request.action);
+
+    if (settings.subtitleMode === 'disabled') {
+        console.log(`[Content] ⚠️ Mode disabled, ignoring message`);
+        return;
+    }
+
     if (request.action === "SUBTITLE_DATA_RECEIVED") {
         const { data, url, langCode } = request;
-        if (url === lastProcessedUrl && fullSubtitles.length > 0) return;
+        console.log(`[Content] 📥 Received ${langCode} subtitle data: ${data ? data.length : 0} bytes`);
+        console.log(`[Content] URL: ${url}`);
+
+        if (url === lastProcessedUrl && fullSubtitles.length > 0) {
+            console.log(`[Content] ⏭️ Skipping: already processed this URL`);
+            return;
+        }
+
         lastProcessedUrl = url;
         window.lastRawData = { data, url, langCode };
-        console.log(`[Content] 📥 Received subtitle data. Processing for mode: ${settings.subtitleMode}`);
+        console.log(`[Content] 📥 Processing for mode: ${settings.subtitleMode}`);
         processReceivedSubtitle(data, url, langCode);
+    } else {
+        console.log(`[Content] ℹ️ Unknown action: ${request.action}`);
     }
 };
 
@@ -80,7 +95,11 @@ const messageHandler = (request, sender, sendResponse) => {
 // --- 2. 核心處理邏輯 ---
 function processReceivedSubtitle(data, url, langCode) {
     const primaryTracks = parseVTT(data);
-    if (primaryTracks.length === 0) return;
+    console.log(`[Content] 📊 Parsed ${langCode} tracks: ${primaryTracks.length} subtitles`);
+    if (primaryTracks.length === 0) {
+        console.warn(`[Content] ⚠️ No subtitles found in ${langCode} track`);
+        return;
+    }
     fullSubtitles = []; updateSubtitleDisplay(0);
 
     // 判斷攔截到的是哪種語言，並準備抓取另一種
@@ -90,39 +109,65 @@ function processReceivedSubtitle(data, url, langCode) {
     // 嘗試猜測另一種語言的網址
     const counterpartUrl = url.replace(`_${currentLangCode}_`, `_${counterpartLangCode}_`);
 
+    console.log(`[Content] 🔍 Language detection: langCode=${langCode}, currentIsZh=${currentIsZh}, currentLangCode=${currentLangCode}`);
+    console.log(`[Content] 🔗 Original: ${url}`);
+    console.log(`[Content] 🔗 Counterpart: ${counterpartUrl}`);
+
     // 總是嘗試抓取另一種語言
     console.log(`[Content] Attempting to fetch counterpart (${counterpartLangCode})...`);
     chrome.runtime.sendMessage({ action: "TRY_FETCH_URL", url: counterpartUrl }, (response) => {
         let zhoTracks = [], engTracks = [];
 
         // 分配中英軌道資料
+        console.log(`[Content] 📬 Counterpart response received:`, response);
         if (currentIsZh) {
             zhoTracks = primaryTracks;
-            if (response && response.success) engTracks = parseVTT(response.data);
+            if (response && response.success) {
+                engTracks = parseVTT(response.data);
+                console.log(`[Content] ✅ Counterpart (eng) parsed: ${engTracks.length} subtitles`);
+            } else {
+                console.warn(`[Content] ❌ Failed to fetch counterpart (eng)`, response);
+            }
         } else {
             engTracks = primaryTracks;
-            if (response && response.success) zhoTracks = parseVTT(response.data);
+            if (response && response.success) {
+                zhoTracks = parseVTT(response.data);
+                console.log(`[Content] ✅ Counterpart (zho) parsed: ${zhoTracks.length} subtitles`);
+            } else {
+                console.warn(`[Content] ❌ Failed to fetch counterpart (zho)`, response);
+            }
         }
 
         // 根據模式決定顯示內容
+        console.log(`[Content] 🎯 Mode: ${settings.subtitleMode}, eng=${engTracks.length}, zho=${zhoTracks.length}`);
+
         switch (settings.subtitleMode) {
             case 'eng_only':
                 // 只顯示英文。如果沒抓到英文，就退回顯示中文。
                 const finalEngTracks = engTracks.length > 0 ? engTracks : zhoTracks;
                 fullSubtitles = finalEngTracks.map(item => ({ start: item.start, end: item.end, text: item.text, translation: '' }));
+                console.log(`[Content] eng_only: showing ${fullSubtitles.length} subtitles`);
                 break;
 
             case 'eng_zho':
                 // 英文在上(text)，中文在下(translation)
                 fullSubtitles = mergeTracks(engTracks, zhoTracks);
+                console.log(`[Content] eng_zho: merged ${fullSubtitles.length} subtitles`);
                 break;
 
             case 'zho_eng':
                 // 中文在上(text)，英文在下(translation)
                 fullSubtitles = mergeTracks(zhoTracks, engTracks);
+                console.log(`[Content] zho_eng: merged ${fullSubtitles.length} subtitles`);
                 break;
         }
-        
+
+        if (fullSubtitles.length > 0) {
+            console.log(`[Content] ✅ Ready: ${fullSubtitles.length} subtitles loaded`);
+        } else {
+            console.warn(`[Content] ⚠️ No subtitles to display!`);
+        }
+
         initializeSubtitleDisplay();
     });
 }
@@ -146,8 +191,89 @@ function createSubtitleContainer() { if (document.getElementById('myvideo-dual-s
 function updateSubtitleDisplay(c) { if (!subtitleContainer || settings.subtitleMode === 'disabled') return; const s = fullSubtitles.find(sub => c >= (sub.start - 0.1) && c <= sub.end); if (s && (s.text || s.translation)) { const zh = s.text || '&nbsp;'; const en = s.translation || '&nbsp;'; if (zh === '&nbsp;' && en === '&nbsp;') { subtitleContainer.style.display = 'none'; return; } const h = `<div class="sub-pair"><div class="sub-cn">${zh}</div><div class="sub-en">${en}</div></div>`; if (subtitleContainer.innerHTML !== h) { subtitleContainer.innerHTML = h; subtitleContainer.style.display = 'block'; } } else { subtitleContainer.style.display = 'none'; } }
 function videoTimeUpdateHandler() { if (videoElement && fullSubtitles.length > 0) updateSubtitleDisplay(videoElement.currentTime); }
 function initializeSubtitleDisplay() { if (settings.subtitleMode === 'disabled') return; videoElement = document.querySelector('video'); if (videoElement) { createSubtitleContainer(); videoElement.removeEventListener('timeupdate', videoTimeUpdateHandler); videoElement.addEventListener('timeupdate', videoTimeUpdateHandler); videoElement.addEventListener('seeking', videoTimeUpdateHandler); } }
-function parseVTT(d) { const s = []; const b = d.replace(/\r\n/g, '\n').split('\n\n'); const r = /(\d{2}:)?(\d{2}):(\d{2})\.(\d{3})\s-->\s(\d{2}:)?(\d{2}):(\d{2})\.(\d{3})/; b.forEach(bl => { if (!bl || bl.trim().startsWith('WEBVTT') || bl.startsWith('NOTE')) return; const l = bl.split('\n'); let ti = -1; for(let i=0; i<l.length; i++) { if (r.test(l[i])) { ti = i; break; } } if (ti !== -1) { const p = l[ti].split(' --> '); const st = timeStringToSeconds(p[0].trim()); const ed = timeStringToSeconds(p[1].trim()); const tx = l.slice(ti + 1).join(' ').replace(/<[^>]+>/g, '').trim(); if (tx && !isNaN(st)) s.push({ start: st, end: ed, text: tx }); } }); return s; }
-function timeStringToSeconds(t) { if (!t) return 0; const p = t.split(':'); let s=0, m=0, h=0, ms=0; if (p.length===3) { h=parseInt(p[0]); m=parseInt(p[1]); const sp=p[2].split('.'); s=parseInt(sp[0]); ms=parseInt(sp[1]||0); } else if (p.length===2) { m=parseInt(p[0]); const sp=p[1].split('.'); s=parseInt(sp[0]); ms=parseInt(sp[1]||0); } return (h*3600)+(m*60)+s+(ms/1000); }
+function parseVTT(d) {
+  const s = [];
+  if (!d) return s;
+
+  const lines = d.replace(/\r\n/g, '\n').split('\n');
+  // Match: HH:MM:SS.mmm or MM:SS.mmm (with flexible whitespace)
+  const timestampRegex = /^\s*(\d{1,2}):(\d{2}):(\d{2})\.(\d{3})\s+-->\s+(\d{1,2}):(\d{2}):(\d{2})\.(\d{3})/;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmedLine = line.trim();
+
+    // Skip empty lines, headers, notes, and metadata lines
+    if (!trimmedLine ||
+        trimmedLine.startsWith('WEBVTT') ||
+        trimmedLine.startsWith('NOTE') ||
+        trimmedLine.startsWith('X-') ||
+        trimmedLine.startsWith('STYLE')) {
+      continue;
+    }
+
+    // Check if this line contains timestamp
+    if (timestampRegex.test(trimmedLine)) {
+      const parts = trimmedLine.split('-->');
+      if (parts.length !== 2) continue;
+
+      const st = timeStringToSeconds(parts[0].trim());
+      const ed = timeStringToSeconds(parts[1].trim());
+
+      // Validate timestamps
+      if (isNaN(st) || isNaN(ed) || st < 0 || ed < 0) continue;
+
+      // Collect text from following lines until empty line
+      const textLines = [];
+      for (let j = i + 1; j < lines.length; j++) {
+        const textLine = lines[j].trim();
+        if (!textLine) {
+          i = j; // Move index to skip processed lines
+          break;
+        }
+        // Skip cue IDs (lines before timestamp that contain only alphanumeric/hyphens)
+        if (!/^\d{1,2}:/.test(textLine)) {
+          textLines.push(textLine);
+        }
+      }
+
+      const text = textLines
+        .join(' ')
+        .replace(/<[^>]+>/g, '') // Remove HTML tags
+        .replace(/\s+/g, ' ') // Collapse multiple spaces
+        .trim();
+
+      if (text && st !== ed) {
+        s.push({ start: st, end: ed, text: text });
+      }
+    }
+  }
+
+  return s;
+}
+function timeStringToSeconds(t) {
+  if (!t) return 0;
+  t = t.trim();
+  const parts = t.split(':');
+  let h = 0, m = 0, s = 0, ms = 0;
+
+  if (parts.length === 3) {
+    // HH:MM:SS.mmm format
+    h = parseInt(parts[0]) || 0;
+    m = parseInt(parts[1]) || 0;
+    const sParts = parts[2].split('.');
+    s = parseInt(sParts[0]) || 0;
+    ms = parseInt((sParts[1] || '0').padEnd(3, '0')) || 0;
+  } else if (parts.length === 2) {
+    // MM:SS.mmm format
+    m = parseInt(parts[0]) || 0;
+    const sParts = parts[1].split('.');
+    s = parseInt(sParts[0]) || 0;
+    ms = parseInt((sParts[1] || '0').padEnd(3, '0')) || 0;
+  }
+
+  return (h * 3600) + (m * 60) + s + (ms / 1000);
+}
 function observeDOM() { const o = new MutationObserver(() => { if ((!videoElement || !videoElement.isConnected) && settings.subtitleMode !== 'disabled') initializeSubtitleDisplay(); }); o.observe(document.body, { childList: true, subtree: true }); }
 
 initialize();
