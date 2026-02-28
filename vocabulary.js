@@ -186,14 +186,58 @@ const ADVANCED_WORDS = {
     }
 };
 
-// 判斷單詞是否需要標記
-function isAdvancedWord(word) {
-    return ADVANCED_WORDS.hasOwnProperty(word.toLowerCase());
+// 全局詞頻資料
+let WORDLIST = null;
+
+// 異步載入 wordlist.json (3000-10000 詞)
+function loadWordlist() {
+    if (WORDLIST) return Promise.resolve();
+    return fetch(chrome.runtime.getURL('wordlist.json'))
+        .then(r => r.json())
+        .then(data => {
+            WORDLIST = data.words || {};
+            console.log('[Vocabulary] Loaded', Object.keys(WORDLIST).length, 'words from wordlist');
+        })
+        .catch(e => {
+            console.warn('[Vocabulary] Failed to load wordlist:', e);
+            WORDLIST = {};
+        });
 }
 
-// 獲取單詞信息
+// 判斷單詞是否需要標記 (檢查本地詞庫 + wordlist)
+function isAdvancedWord(word) {
+    const lowerWord = word.toLowerCase();
+    // 優先檢查本地詞庫 (21 個詞 + 定義 + 例句)
+    if (ADVANCED_WORDS.hasOwnProperty(lowerWord)) {
+        return true;
+    }
+    // 再檢查 wordlist (3000-10000 範圍)
+    if (WORDLIST && WORDLIST[lowerWord]) {
+        return true;
+    }
+    return false;
+}
+
+// 獲取單詞信息 (支援本地詞庫 + wordlist)
 function getWordInfo(word) {
-    return ADVANCED_WORDS[word.toLowerCase()] || null;
+    const lowerWord = word.toLowerCase();
+    // 優先從本地詞庫 (有完整定義)
+    if (ADVANCED_WORDS[lowerWord]) {
+        return ADVANCED_WORDS[lowerWord];
+    }
+    // 從 wordlist 獲取基本信息 (rank 和 tier)
+    if (WORDLIST && WORDLIST[lowerWord]) {
+        const rank = WORDLIST[lowerWord];
+        const tier = rank >= 5000 ? 2 : 1;
+        return {
+            rank: rank,
+            tier: tier,
+            level: tier === 1 ? 'B2-C1' : 'C1-C2',
+            definition: '',
+            examples: []
+        };
+    }
+    return null;
 }
 
 // 安全地創建Tooltip DOM
@@ -316,6 +360,11 @@ function createTooltipContainer() {
     container.className = 'word-tooltip-container';
     document.body.appendChild(container);
 }
+
+// 初始化詞表（模組載入時）
+loadWordlist().catch(e => {
+    console.warn('[Vocabulary] Failed to initialize wordlist:', e);
+});
 
 // 匯出功能
 if (typeof module !== 'undefined' && module.exports) {
