@@ -33,5 +33,11 @@
   ],
   "icons": {
     "128": "icon.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["wordlist.json"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
