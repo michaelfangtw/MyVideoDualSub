@@ -1,109 +1,175 @@
-# Critical Fix Summary - v4.0.5
+# API Error Fix Summary - v6.0 (March 1, 2026)
 
 ## Problem Identified
 
-The extension was failing to detect and process VTT subtitle requests from multiple CDN sources. The error logs showed:
+When testing the Microsoft Translator API connection, users got a **401 Unauthorized error**: "❌ API Key 無效已過期" even though the API key was valid.
 
+### Root Causes
+
+1. **CORS Issue**: The original test was running in the extension popup context, which could be blocked by CORS
+2. **Missing Region Header**: Microsoft Translator API requires the `Ocp-Apim-Subscription-Region` header in addition to the API key
+3. **No Proper Error Feedback**: Test errors weren't being properly communicated to users
+
+## Solutions Applied
+
+### 1. Use Global Endpoint with Region Header ⭐ **CRITICAL FIX**
+
+The most important fix: Microsoft Translator uses **global endpoint** with **region specified in header**, not regional URLs.
+
+**Before (WRONG):**
 ```
-[Background] Message error (eng): [object Object]
-[Background] Message error (zho): [object Object]
+// Using regional endpoint subdomain (won't work)
+https://eastasia.api.cognitive.microsofttranslator.com/translate
 ```
 
-## Root Cause
+**After (CORRECT):**
+```
+// Global endpoint + region header
+https://api.cognitive.microsofttranslator.com/translate
+Headers: { 'Ocp-Apim-Subscription-Region': 'eastasia' }
+```
 
-**Chrome Extension Manifest V3 Security Policy**: The `webRequest` API requires explicit `host_permissions` for each domain it monitors. While the background.js code was attempting to listen to multiple CDN domains, the manifest.json only granted host_permissions to `https://*.myvideo.net.tw/*`.
+This is the **primary reason** for the 401 error! The region must be specified in the header, not in the URL.
 
-This caused:
-1. ✗ VTT requests from `vodstrm.myvideo.net.tw` were not detected
-2. ✗ VTT requests from `*.cdn.tfn.net.tw` were not detected
-3. ✗ Content scripts were not injected on those domains
-4. ✗ Message passing between background worker and content script failed
-
-## Solution Applied
-
-### manifest.json Changes
+### 2. Move API Test to Background Service Worker (popup.js)
 
 **Before:**
-```json
-"host_permissions": [
-  "https://*.myvideo.net.tw/*"
-],
-"content_scripts": [
-  {
-    "matches": ["https://*.myvideo.net.tw/*"],
-    ...
-  }
-]
+```javascript
+// Direct fetch from popup context (prone to CORS issues)
+fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Ocp-Apim-Subscription-Key': apiKey
+    },
+    body: JSON.stringify(testPayload)
+})
 ```
 
 **After:**
-```json
-"host_permissions": [
-  "https://*.myvideo.net.tw/*",
-  "https://*.cdn.tfn.net.tw/*",
-  "https://vodstrm.myvideo.net.tw/*"
-],
-"content_scripts": [
-  {
-    "matches": [
-      "https://*.myvideo.net.tw/*",
-      "https://*.cdn.tfn.net.tw/*",
-      "https://vodstrm.myvideo.net.tw/*"
-    ],
-    ...
-  }
-]
+```javascript
+// Route through background service worker (handles CORS properly)
+chrome.runtime.sendMessage(
+    { action: "TEST_TRANSLATOR_API", apiKey: apiKey },
+    (response) => {
+        if (response.success) {
+            showStatus('✅ 連線成功！API Key 有效', 'success');
+            chrome.storage.sync.set({ translatorApiKey: apiKey });
+        } else {
+            showStatus(`❌ ${response.error}`, 'error');
+        }
+    }
+);
 ```
 
-## Why This Matters
+**Benefits:**
+- ✅ Avoids CORS issues (background service worker can make unrestricted requests)
+- ✅ Provides detailed error messages from the server
+- ✅ Consistent with translation message passing architecture
 
-1. **host_permissions** - Allows the webRequest listener to intercept HTTP requests on these domains
-2. **content_scripts matches** - Ensures the content script is injected to handle messages from background worker
+### 2. Add Microsoft Translator Region Header (background.js)
 
-Without these permissions, Chrome's security model prevents:
-- Network request interception
-- Content script injection
-- Inter-process message passing
+Microsoft Translator API **requires** the region header along with the subscription key.
 
-## Testing the Fix
+**Added to both test and translation calls:**
+```javascript
+headers: {
+    'Content-Type': 'application/json',
+    'Ocp-Apim-Subscription-Key': apiKey,
+    'Ocp-Apim-Subscription-Region': 'eastasia' // 新增
+}
+```
 
-After updating manifest.json, you need to:
+**Supported Regions:**
+- `eastasia` (東亞) - Recommended for Taiwan users
+- `southeastasia` (東南亞) - Alternative
+- Other Azure regions as needed
 
-1. Go to `chrome://extensions/` or `edge://extensions/`
-2. Find "myVideo Dual Transcript"
-3. Click the **Reload** button (circular arrow icon)
-4. Play any myVideo video with subtitles
-5. Open DevTools (F12) and check console for successful logs:
-   ```
-   [Background] 🕵️ Detected VTT request: https://vodstrm.myvideo.net.tw/...
-   [Background] ✅ Response received (eng): 200 OK
-   [Background] ✅ Message sent (eng) to tabId ...
-   [Content] 📨 Message received: SUBTITLE_DATA_RECEIVED
-   [Content] ✅ Ready: XXX subtitles loaded
-   ```
+### 3. Emphasize Region in Setup Instructions (popup.html)
+
+Updated Step 3 to highlight that region selection is critical:
+
+```html
+• 區域：<strong>東亞 (East Asia)</strong> ⚠️ 重要
+```
+
+This ensures users select the correct region when creating their Azure Translator resource.
+
+### 4. Add TEST_TRANSLATOR_API Handler (background.js)
+
+New message handler for testing API connectivity:
+
+```javascript
+if (request.action === "TEST_TRANSLATOR_API") {
+    const apiKey = request.apiKey;
+    // Tests the API with a simple "Hello" translation
+    // Returns { success: true } or { success: false, error: 'reason' }
+}
+```
+
+**Error handling:**
+- 401 → 'API Key 無效或已過期' (Invalid or expired)
+- 403 → '無權限 (檢查金鑰和區域)' (Permission denied, check key and region)
+- Other → 'HTTP {status}' error
+- Network errors → Detailed error message
 
 ## Files Modified
 
-- ✅ `manifest.json` - Updated version 4.0.5 with expanded host_permissions and content_scripts
-- ✅ `README.md` - Updated changelog with critical fix note
+### background.js
+- ✅ Added `TEST_TRANSLATOR_API` message handler for testing API connection
+- ✅ Added region header `'Ocp-Apim-Subscription-Region': 'eastasia'` to both:
+  - Test API call (line 98)
+  - Translation batch processing (line 207)
 
-## Supported CDNs
+### popup.js
+- ✅ Refactored `testConnection()` to route through background service worker
+- ✅ Improved error messaging with response.error feedback
+- ✅ Better user experience with clearer status messages
 
-The extension now supports VTT files from:
+### popup.html
+- ✅ Emphasized region selection as "⚠️ 重要" (Important)
+- ✅ Made it clear that "東亞 (East Asia)" should be selected
 
-1. **myvideo.net.tw** - Original myVideo CDN (vodstrm.myvideo.net.tw)
-2. **cdn.tfn.net.tw** - Third-party token-based CDN
-3. **Other matching patterns** - Future CDNs that follow similar URL structures
+## How to Test
 
-## Related Files (No Changes Needed)
+1. **With an invalid API key:**
+   - Enter a random key like "aaabbbcccdddeeefffggg"
+   - Click "測試連線"
+   - Should show: "❌ API Key 無效或已過期"
 
-- `background.js` - Already correctly monitors the URLs, no changes needed
-- `content_script.js` - Already correctly receives messages, no changes needed
-- `styles.css` - No changes
-- `popup.js`, `popup.html` - No changes
+2. **With a valid API key:**
+   - Create Azure Translator resource at https://portal.azure.com/
+   - Select region: **東亞 (East Asia)**
+   - Select pricing tier: **Free**
+   - Copy Key 1 from Keys and Endpoint
+   - Paste in extension popup
+   - Click "測試連線"
+   - Should show: "✅ 連線成功！API Key 有效"
+
+3. **Translation should work:**
+   - Select "英/中(AI翻譯,by Microsoft)" mode
+   - Play MyVideo with English subtitles
+   - Chinese translation should appear automatically
+
+## Debugging Checklist
+
+If API Key still doesn't work:
+
+- [ ] Is the region **東亞 (East Asia)** selected in Azure portal?
+- [ ] Is the API key **at least 32 characters** long?
+- [ ] Did you copy the full key from "Key 1" or "Key 2"?
+- [ ] Check browser console (F12) for messages like:
+  - `[Background] 🧪 Testing Translator API with key: ...`
+  - `[Background] 📥 Test API Response: 200` (should be 200 for success)
+  - `[Background] ✅ API Key test passed`
+
+## Related Information
+
+- **Microsoft Translator API Docs**: https://learn.microsoft.com/en-us/azure/cognitive-services/translator/
+- **Free Quota**: 2 million characters per month
+- **Language Code**: Uses `zh-Hant` for Traditional Chinese and `en` for English
 
 ---
 
-**Version**: 4.0.5
-**Date**: 2026-02-27
-**Status**: ✅ Ready for testing
+**Version**: 6.0 (March 1, 2026)
+**Status**: ✅ API Error Fix Complete - Ready for Testing

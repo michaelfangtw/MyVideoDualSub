@@ -3,7 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <style>
-    body { width: 220px; padding: 15px; font-family: "Microsoft JhengHei", sans-serif; background: #f9f9f9; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { width: 380px; font-family: "Microsoft JhengHei", sans-serif; background: #f9f9f9; }
+
+    .tabs { display: flex; background: white; border-bottom: 1px solid #ddd; }
+    .tab-btn { flex: 1; padding: 12px; text-align: center; cursor: pointer; border: none; font-size: 13px; color: #666; background: white; transition: 0.2s; }
+    .tab-btn.active { color: #2196F3; border-bottom: 2px solid #2196F3; font-weight: 500; }
+    .tab-btn:hover { background: #f5f5f5; }
+
+    .tab-content { display: none; padding: 15px; }
+    .tab-content.active { display: block; }
+
+    /* 字幕模式頁 */
     h3 { margin: 0 0 15px 0; color: #333; text-align: center; font-size: 16px; }
     .radio-group { background: white; border-radius: 8px; padding: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .radio-option { display: flex; align-items: center; padding: 10px; cursor: pointer; transition: 0.2s; border-radius: 6px; }
@@ -14,19 +25,146 @@
     .recommend-badge { color: #ff9800; font-size: 11px; margin-left: 4px; font-weight: bold; }
     .new-badge { color: #f44336; font-size: 10px; margin-left: 4px; font-weight: bold; }
     .dual-label { color: #2196F3; font-weight: 500; }
-    .translate-desc { font-size: 11px; color: #666; display: block; margin-top: 2px; }
+
+    /* API Key 設定頁 */
+    .section { margin-bottom: 15px; }
+    .section-title { font-size: 13px; color: #333; font-weight: bold; margin-bottom: 8px; }
+    .section-desc { font-size: 12px; color: #666; line-height: 1.5; margin-bottom: 8px; }
+    .section-link { color: #2196F3; text-decoration: none; cursor: pointer; }
+    .section-link:hover { text-decoration: underline; }
+
+    .step { background: white; padding: 10px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid #2196F3; }
+    .step-title { font-weight: bold; font-size: 12px; color: #333; margin-bottom: 4px; }
+    .step-content { font-size: 11px; color: #666; line-height: 1.5; }
+
+    input[type="password"], input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; margin-bottom: 8px; }
+    input:focus { outline: none; border-color: #2196F3; box-shadow: 0 0 4px rgba(33, 150, 243, 0.3); }
+
+    .button-group { display: flex; gap: 8px; }
+    button { flex: 1; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; transition: 0.2s; }
+    .btn-primary { background: #2196F3; color: white; }
+    .btn-primary:hover { background: #1976D2; }
+    .btn-secondary { background: #f0f0f0; color: #333; }
+    .btn-secondary:hover { background: #e0e0e0; }
+
+    .status-msg { font-size: 11px; padding: 8px; border-radius: 4px; text-align: center; margin-top: 8px; }
+    .status-msg.success { background: #c8e6c9; color: #2e7d32; }
+    .status-msg.error { background: #ffcdd2; color: #c62828; }
+    .status-msg.info { background: #bbdefb; color: #1565c0; }
   </style>
 </head>
 <body>
-  <h3>myVideo 字幕模式</h3>
-  <div class="radio-group">
-    <label class="radio-option"><input type="radio" name="mode" value="disabled"><span class="label-txt">關閉外掛</span></label>
-    <label class="radio-option"><input type="radio" name="mode" value="eng"><span class="label-txt">英文 <span class="default-badge">(預設)</span> <span class="recommend-badge">推薦</span></span></label>
-    <label class="radio-option"><input type="radio" name="mode" value="zho"><span class="label-txt">中文</span></label>
-    <label class="radio-option"><input type="radio" name="mode" value="zho_eng"><span class="label-txt dual-label">中文 / 英文</span></label>
-    <label class="radio-option"><input type="radio" name="mode" value="eng_zho"><span class="label-txt dual-label">英文 / 中文</span></label>
-    <label class="radio-option"><input type="radio" name="mode" value="eng_zho_translate"><span class="label-txt dual-label">英文/中文<span class="new-badge">NEW</span><span class="translate-desc">(AI翻譯)</span></span></label>
+  <!-- 標籤頁 -->
+  <div class="tabs">
+    <button type="button" class="tab-btn active" data-tab="modes">字幕模式</button>
+    <button type="button" class="tab-btn" data-tab="settings">Microsoft Translator 設定</button>
   </div>
+
+  <!-- 字幕模式頁 -->
+  <div id="modes" class="tab-content active">
+    <h3>myVideo 字幕模式</h3>
+    <div class="radio-group">
+      <label class="radio-option"><input type="radio" name="mode" value="disabled"><span class="label-txt">關閉外掛</span></label>
+      <label class="radio-option"><input type="radio" name="mode" value="eng"><span class="label-txt">英文 <span class="default-badge">(預設)</span> <span class="recommend-badge">推薦</span></span></label>
+      <label class="radio-option"><input type="radio" name="mode" value="zho"><span class="label-txt">繁體中文</span></label>
+      <label class="radio-option"><input type="radio" name="mode" value="zho_eng"><span class="label-txt dual-label">繁體中文 / 英文</span></label>
+      <label class="radio-option"><input type="radio" name="mode" value="eng_zho"><span class="label-txt dual-label">英文 / 繁體中文</span></label>
+      <label class="radio-option"><input type="radio" name="mode" value="eng_zho_translate"><span class="label-txt dual-label">英/中(AI翻譯,by Microsoft)<span class="new-badge">NEW</span></span></label>
+    </div>
+  </div>
+
+  <!-- 設定頁 -->
+  <div id="settings" class="tab-content">
+    <h3>Microsoft Translator 設定</h3>
+
+    <!-- 地區設定 -->
+    <div class="section">
+      <div class="section-title">🌍 申請區域 (Select Region)</div>
+      <select id="regionSelect" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; margin-bottom: 8px;">
+        <option value="eastasia">東亞 (East Asia) - 推薦</option>
+        <option value="southeastasia">東南亞 (Southeast Asia)</option>
+        <option value="eastus">美國東部 (East US)</option>
+        <option value="westus">美國西部 (West US)</option>
+        <option value="westus2">美國西部2 (West US 2)</option>
+        <option value="centralus">美國中部 (Central US)</option>
+        <option value="japaneast">日本東部 (Japan East)</option>
+        <option value="japanwest">日本西部 (Japan West)</option>
+        <option value="australiaeast">澳洲東部 (Australia East)</option>
+        <option value="canadacentral">加拿大中部 (Canada Central)</option>
+        <option value="westeurope">西歐 (West Europe)</option>
+        <option value="northeurope">北歐 (North Europe)</option>
+        <option value="uksouth">英國南部 (UK South)</option>
+        <option value="switzerlandnorth">瑞士北部 (Switzerland North)</option>
+        <option value="global">全球 (Global)</option>
+      </select>
+      <div id="regionStatus"></div>
+    </div>
+
+    <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
+
+    <!-- API Key 輸入 -->
+    <div class="section">
+      <div class="section-title">1️⃣ 輸入 API Key</div>
+      <input type="password" id="apiKey" placeholder="貼上你的 API Key...">
+      <div class="button-group">
+        <button type="button" class="btn-primary" id="saveButton">儲存 API Key</button>
+        <button type="button" class="btn-secondary" id="testButton">測試連線</button>
+      </div>
+      <div id="status"></div>
+    </div>
+
+    <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
+
+    <!-- 申請說明 -->
+    <div class="section">
+      <div class="section-title">📋 如何取得 API Key？</div>
+
+      <div class="step">
+        <div class="step-title">步驟 1：建立 Azure 帳號</div>
+        <div class="step-content">
+          前往 <a class="section-link" href="https://portal.azure.com/" target="_blank" rel="noopener">Microsoft Azure 入口</a>
+          <br>點擊「建立免費帳戶」，完成註冊（需要信用卡驗證，但不會扣款）
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-title">步驟 2：建立 Translator 資源</div>
+        <div class="step-content">
+          1. 點擊 「+ 建立資源」<br>
+          2. 搜尋並選擇「Translator」<br>
+          3. 點擊「建立」
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-title">步驟 3：設定資源</div>
+        <div class="step-content">
+          • 資源群組：建立新的 (名稱隨意)<br>
+          • 區域：<strong>東亞 (East Asia)</strong> ⚠️ 重要<br>
+          • 定價層：<strong>Free</strong> ✅<br>
+          • 名稱：隨意 (如「MyVideoTranslator」)
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-title">步驟 4：複製 API Key</div>
+        <div class="step-content">
+          1. 資源建立完成後，進入資源<br>
+          2. 左邊菜單 → 「Keys and Endpoint」<br>
+          3. 複製 <strong>Key 1</strong> 或 <strong>Key 2</strong><br>
+          4. 貼到上面的輸入框，點「儲存」
+        </div>
+      </div>
+
+      <div style="background: #e3f2fd; padding: 10px; border-radius: 4px; margin-top: 10px;">
+        <div style="font-size: 11px; color: #1565c0; line-height: 1.5;">
+          <strong>💡 免費額度：</strong> 每月 200 萬字<br>
+          足夠看 100+ 部電影字幕！
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="popup.js"></script>
 </body>
 </html>

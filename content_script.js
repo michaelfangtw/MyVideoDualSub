@@ -6,14 +6,17 @@ let videoElement = null;
 let subtitleContainer = null;
 let lastProcessedUrl = '';
 let tooltipInitialized = false;
+let translatorApiType = 'microsoft'; // 預設為 Microsoft
 
 // 設定狀態變數 (預設值)
 let settings = { subtitleMode: 'eng' };
 
 // --- 1. 初始化與設定讀取 ---
 function initialize() {
-    chrome.storage.sync.get(settings, (items) => {
+    chrome.storage.sync.get({ ...settings, translatorApiType: 'microsoft' }, (items) => {
         settings = items;
+        translatorApiType = items.translatorApiType || 'microsoft';
+        console.log('[Content] 📋 Settings loaded. Translator API Type:', translatorApiType);
         applyModeSettings();
     });
     observeDOM();
@@ -277,15 +280,11 @@ function processReceivedSubtitle(data, url, langCode) {
                 break;
 
             case 'eng_zho_translate':
-                // 英文在上(text)，中文翻譯或原文在下(translation)
+                // 英文在上(text)，AI翻譯中文在下(translation) - 優先翻譯，不直接合併
                 console.log(`[Content] eng_zho_translate: engTracks=${engTracks.length}, zhoTracks=${zhoTracks.length}`);
-                if (engTracks.length > 0 && zhoTracks.length > 0) {
-                    // 兩種都有，直接合併
-                    fullSubtitles = mergeTracks(engTracks, zhoTracks);
-                    console.log(`[Content] eng_zho_translate: merged ${fullSubtitles.length} subtitles (both available)`);
-                } else if (engTracks.length > 0) {
-                    // 只有英文，翻譯英文為中文
-                    console.log(`[Content] eng_zho_translate: translating English to Chinese (${engTracks.length} subtitles)...`);
+                if (engTracks.length > 0) {
+                    // 優先：有英文就翻譯英文為中文（即使有中文字幕也翻譯）
+                    console.log(`[Content] eng_zho_translate: translating English to Chinese (${engTracks.length} subtitles, ignoring existing Chinese tracks)...`);
                     console.log(`[Content] 📤 Sending TRANSLATE_SUBTITLES message to background...`);
                     chrome.runtime.sendMessage(
                         { action: "TRANSLATE_SUBTITLES", subtitles: engTracks, sourceLang: 'eng' },
@@ -296,20 +295,20 @@ function processReceivedSubtitle(data, url, langCode) {
                                 // If translation is empty, show placeholder
                                 fullSubtitles = fullSubtitles.map(item => ({
                                     ...item,
-                                    translation: item.translation || '🤖 AI翻譯 ----------'
+                                    translation: item.translation || '/AI翻譯/'
                                 }));
                                 console.log(`[Content] eng_zho_translate: showing ${fullSubtitles.length} subtitles (translated)`);
                                 initializeSubtitleDisplay();
                             } else {
                                 console.warn(`[Content] Translation failed`);
-                                fullSubtitles = engTracks.map(item => ({ start: item.start, end: item.end, text: item.text, translation: '🤖 AI翻譯 ----------' }));
+                                fullSubtitles = engTracks.map(item => ({ start: item.start, end: item.end, text: item.text, translation: '/AI翻譯/ -------------------' }));
                                 initializeSubtitleDisplay();
                             }
                         }
                     );
                     return;
                 } else if (zhoTracks.length > 0) {
-                    // 只有中文，翻譯中文為英文
+                    // 退而求其次：沒有英文，翻譯中文為英文
                     console.log(`[Content] eng_zho_translate: translating Chinese to English (${zhoTracks.length} subtitles)...`);
                     console.log(`[Content] 📤 Sending TRANSLATE_SUBTITLES message to background...`);
                     chrome.runtime.sendMessage(
@@ -320,14 +319,14 @@ function processReceivedSubtitle(data, url, langCode) {
                                 fullSubtitles = response.translatedSubtitles.map(item => ({
                                     start: item.start,
                                     end: item.end,
-                                    text: item.translation || '🤖 AI翻譯 ----------', // 英文翻譯放在上面，失敗顯示佔位符
+                                    text: item.translation || '/AI翻譯/ -------------------', // 英文翻譯放在上面，失敗顯示佔位符
                                     translation: item.text // 原始中文放在下面
                                 }));
                                 console.log(`[Content] eng_zho_translate: showing ${fullSubtitles.length} subtitles (translated)`);
                                 initializeSubtitleDisplay();
                             } else {
                                 console.warn(`[Content] Translation failed`);
-                                fullSubtitles = zhoTracks.map(item => ({ start: item.start, end: item.end, text: '🤖 AI翻譯 ----------', translation: item.text }));
+                                fullSubtitles = zhoTracks.map(item => ({ start: item.start, end: item.end, text: '/AI翻譯/ -------------------', translation: item.text }));
                                 initializeSubtitleDisplay();
                             }
                         }
@@ -413,7 +412,8 @@ function updateSubtitleDisplay(c) {
             if (zh !== '&nbsp;') {
                 const isTranslated = settings.subtitleMode === 'zho_eng_translate';
                 const cnClass = isTranslated ? 'sub-cn-translate' : 'sub-cn';
-                h += `<div class="${cnClass}">${zh}</div>`;
+                const icon = isTranslated ? 'Ⓜ️AI翻譯| ' : '';
+                h += `<div class="${cnClass}">${icon}${zh}</div>`;
             }
             if (en !== '&nbsp;') {
                 h += `<div class="sub-en">${en}</div>`;
@@ -426,7 +426,8 @@ function updateSubtitleDisplay(c) {
             if (zh !== '&nbsp;') {
                 const isTranslated = settings.subtitleMode === 'eng_zho_translate';
                 const cnClass = isTranslated ? 'sub-cn-translate' : 'sub-cn';
-                const icon = isTranslated ? '🤖 ' : '';
+                // Microsoft Translator always uses Ⓜ️ icon
+                const icon = isTranslated ? 'Ⓜ️AI翻譯| ' : '';
                 h += `<div class="${cnClass}">${icon}${zh}</div>`;
             }
         }

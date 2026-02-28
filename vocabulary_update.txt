@@ -1,0 +1,10 @@
+需要添加的高頻單詞（簡化版本）
+目的：讓影片中出現的英文單詞能被標記
+
+常見動詞：appear, understand, discover, believe, remember, create, control, become, follow, provide, produce, support, require, prepare, examine, expect, explain, explore, consider, observe, maintain, establish, demonstrate, increase, decrease
+
+常見形容詞：new, important, different, special, similar, beautiful, interesting, possible, necessary, difficult, complete, clear, strange, familiar, obvious, uncertain, strong, weak, happy, angry, afraid, sorry, capable, reliable, mysterious
+
+常見名詞：change, problem, situation, condition, reason, purpose, effect, consequence, experience, information, evidence, example, pattern, system, method, technique, way, result, process, moment, place, person, time, number
+
+這些詞都應該在 3000-10000 範圍內
