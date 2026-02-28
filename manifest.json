@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MyVideo DualSub - MyVideo雙語字幕小幫手",
-  "version": "5.0",
+  "version": "6.0",
   "description": "被動監聽版：需手動觸發原廠字幕。支援單選模式與原廠字幕隱藏。",
   "permissions": [
     "scripting",
