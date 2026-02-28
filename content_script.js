@@ -239,7 +239,7 @@ function processReceivedSubtitle(data, url, langCode) {
                                 initializeSubtitleDisplay();
                             } else {
                                 console.warn(`[Content] zho_eng: translation failed`);
-                                fullSubtitles = zhoTracks.map(item => ({ start: item.start, end: item.end, text: item.text, translation: '' }));
+                                fullSubtitles = zhoTracks.map(item => ({ start: item.start, end: item.end, text: item.text, translation: item.text }));
                                 initializeSubtitleDisplay();
                             }
                         }
@@ -343,11 +343,12 @@ function mergeTracks(main, sub) {
     if (main.length === 0) return [];
     // 如果副軌道沒資料，就只顯示主軌道
     if (sub.length === 0) {
-        return main.map(item => ({ start: item.start, end: item.end, text: item.text, translation: '' }));
+        // 當副軌道為空時，副軌道欄位使用主軌道的內容（作為備選方案）
+        return main.map(item => ({ start: item.start, end: item.end, text: item.text, translation: item.text }));
     }
     return main.map(mItem => {
         const sItem = sub.find(si => (si.start < mItem.end && si.end > mItem.start) && Math.abs(si.start - mItem.start) < 0.5);
-        return { start: mItem.start, end: mItem.end, text: mItem.text, translation: sItem ? sItem.text : '' };
+        return { start: mItem.start, end: mItem.end, text: mItem.text, translation: sItem ? sItem.text : mItem.text };
     });
 }
 
