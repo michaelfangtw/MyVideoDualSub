@@ -44,6 +44,8 @@ function applyModeSettings() {
         console.log("[Content] Mode is ENABLED. Setting up...");
         // 加入 class 以隱藏原廠字幕
         document.body.classList.add('myvideo-dual-sub-active');
+        // 設定 data-subtitle-mode 屬性用於 CSS 樣式選擇
+        document.body.setAttribute('data-subtitle-mode', settings.subtitleMode);
         setupListeners();
         initializeSubtitleDisplay();
     }
@@ -63,6 +65,7 @@ function teardown() {
     fullSubtitles = [];
     // 移除 class 以恢復原廠字幕
     document.body.classList.remove('myvideo-dual-sub-active');
+    document.body.removeAttribute('data-subtitle-mode');
 }
 
 const messageHandler = (request, _sender, sendResponse) => {

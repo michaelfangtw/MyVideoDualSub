@@ -19,14 +19,23 @@
 .sub-pair {
     background: linear-gradient(135deg, rgba(0, 0, 0, 0.72) 0%, rgba(10, 10, 15, 0.68) 100%);
     padding: 12px 20px;
-    border-radius: 12px;
-    display: inline-block;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(8px);
+    border-radius: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
+    border: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    width: 100%;
+}
+
+/* 單字幕模式時: 保留原有的 inline-block + border-radius 樣式 */
+body[data-subtitle-mode="eng"] .sub-pair,
+body[data-subtitle-mode="zho"] .sub-pair {
+    display: inline-block;
+    border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    width: auto;
 }
 
 /* 中文行樣式 (永遠在上方) - 亮藍色 */
@@ -52,10 +61,30 @@
     font-family: 'Poppins', sans-serif;
 }
 
+/* 雙字幕模式 (中/英 或 英/中): 貼齊畫面底部蓋住原廠字幕 */
+body[data-subtitle-mode="zho_eng"] #myvideo-dual-subtitle-container,
+body[data-subtitle-mode="eng_zho"] #myvideo-dual-subtitle-container,
+body[data-subtitle-mode="zho_eng_translate"] #myvideo-dual-subtitle-container,
+body[data-subtitle-mode="eng_zho_translate"] #myvideo-dual-subtitle-container {
+    bottom: 0 !important;
+    width: 100vw !important;
+    max-width: none !important;
+    left: 0 !important;
+    transform: none !important;
+}
+
 /* 全螢幕調整 - 使用 viewport 相對單位確保在全螢幕時仍然可見 */
 :fullscreen #myvideo-dual-subtitle-container,
 :-webkit-full-screen #myvideo-dual-subtitle-container {
     bottom: 8vh !important;
+}
+
+/* 全螢幕雙字幕模式: 仍需貼齊底部 */
+:fullscreen body[data-subtitle-mode="zho_eng"] #myvideo-dual-subtitle-container,
+:fullscreen body[data-subtitle-mode="eng_zho"] #myvideo-dual-subtitle-container,
+:-webkit-full-screen body[data-subtitle-mode="zho_eng"] #myvideo-dual-subtitle-container,
+:-webkit-full-screen body[data-subtitle-mode="eng_zho"] #myvideo-dual-subtitle-container {
+    bottom: 0 !important;
 }
 :fullscreen .sub-pair,
 :-webkit-full-screen .sub-pair {
