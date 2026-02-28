@@ -286,9 +286,11 @@ function processReceivedSubtitle(data, url, langCode) {
                 } else if (engTracks.length > 0) {
                     // 只有英文，翻譯英文為中文
                     console.log(`[Content] eng_zho_translate: translating English to Chinese (${engTracks.length} subtitles)...`);
+                    console.log(`[Content] 📤 Sending TRANSLATE_SUBTITLES message to background...`);
                     chrome.runtime.sendMessage(
                         { action: "TRANSLATE_SUBTITLES", subtitles: engTracks, sourceLang: 'eng' },
                         (response) => {
+                            console.log(`[Content] 📥 Translation response received:`, response);
                             if (response && response.translatedSubtitles) {
                                 fullSubtitles = response.translatedSubtitles;
                                 // If translation is empty, show placeholder
@@ -309,9 +311,11 @@ function processReceivedSubtitle(data, url, langCode) {
                 } else if (zhoTracks.length > 0) {
                     // 只有中文，翻譯中文為英文
                     console.log(`[Content] eng_zho_translate: translating Chinese to English (${zhoTracks.length} subtitles)...`);
+                    console.log(`[Content] 📤 Sending TRANSLATE_SUBTITLES message to background...`);
                     chrome.runtime.sendMessage(
                         { action: "TRANSLATE_SUBTITLES", subtitles: zhoTracks, sourceLang: 'zho' },
                         (response) => {
+                            console.log(`[Content] 📥 Translation response received:`, response);
                             if (response && response.translatedSubtitles) {
                                 fullSubtitles = response.translatedSubtitles.map(item => ({
                                     start: item.start,
