@@ -27,7 +27,7 @@
         "https://*.cdn.tfn.net.tw/*",
         "https://vodstrm.myvideo.net.tw/*"
       ],
-      "js": ["content_script.js"],
+      "js": ["vocabulary.js", "content_script.js"],
       "css": ["styles.css"],
       "run_at": "document_end"
     }

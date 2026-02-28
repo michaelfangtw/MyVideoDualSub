@@ -1,10 +1,11 @@
-// content_script.js (V4.0 Passive Radio Mode)
-console.log("[Dual Subtitle] Content script loaded (Passive V4.0).");
+// content_script.js (V5.0 Passive Radio Mode with Word Frequency)
+console.log("[Dual Subtitle] Content script loaded (V5.0 with vocabulary analysis).");
 
 let fullSubtitles = [];
 let videoElement = null;
 let subtitleContainer = null;
 let lastProcessedUrl = '';
+let tooltipInitialized = false;
 
 // 設定狀態變數 (預設值)
 let settings = { subtitleMode: 'eng' };
@@ -352,7 +353,44 @@ function mergeTracks(main, sub) {
 
 // (UI, VTT解析, DOM觀察函數與之前相同，請複製完整版)
 function createSubtitleContainer() { if (document.getElementById('myvideo-dual-subtitle-container')) return; subtitleContainer = document.createElement('div'); subtitleContainer.id = 'myvideo-dual-subtitle-container'; document.body.appendChild(subtitleContainer); }
-function updateSubtitleDisplay(c) { if (!subtitleContainer || settings.subtitleMode === 'disabled') return; const s = fullSubtitles.find(sub => c >= (sub.start - 0.1) && c <= sub.end); if (s && (s.text || s.translation)) { const zh = s.text || '&nbsp;'; const en = s.translation || '&nbsp;'; if (zh === '&nbsp;' && en === '&nbsp;') { subtitleContainer.style.display = 'none'; return; } const h = `<div class="sub-pair"><div class="sub-cn">${zh}</div><div class="sub-en">${en}</div></div>`; if (subtitleContainer.innerHTML !== h) { subtitleContainer.innerHTML = h; subtitleContainer.style.display = 'block'; } } else { subtitleContainer.style.display = 'none'; } }
+function updateSubtitleDisplay(c) {
+    if (!subtitleContainer || settings.subtitleMode === 'disabled') return;
+    const s = fullSubtitles.find(sub => c >= (sub.start - 0.1) && c <= sub.end);
+    if (s && (s.text || s.translation)) {
+        let zh = s.text || '&nbsp;';
+        let en = s.translation || '&nbsp;';
+        if (zh === '&nbsp;' && en === '&nbsp;') {
+            subtitleContainer.style.display = 'none';
+            return;
+        }
+        if (en !== '&nbsp;') {
+            en = markAdvancedWords(en);
+        }
+        const h = `<div class="sub-pair"><div class="sub-cn">${zh}</div><div class="sub-en">${en}</div></div>`;
+        if (subtitleContainer.innerHTML !== h) {
+            subtitleContainer.innerHTML = h;
+            subtitleContainer.style.display = 'block';
+            if (!tooltipInitialized && typeof initializeTooltips === 'function') {
+                createTooltipContainer();
+                initializeTooltips();
+                tooltipInitialized = true;
+            }
+        }
+    } else {
+        subtitleContainer.style.display = 'none';
+    }
+}
+
+// Mark advanced words in English subtitles
+function markAdvancedWords(text) {
+    if (!text || typeof text !== 'string') return text;
+    return text.replace(/([a-z'-]+)/gi, (match) => {
+        if (typeof ADVANCED_WORDS !== 'undefined' && ADVANCED_WORDS.hasOwnProperty(match.toLowerCase())) {
+            return `<span class="advanced-word" data-word="${match.toLowerCase()}" title="Advanced word">${match}*</span>`;
+        }
+        return match;
+    });
+}
 function videoTimeUpdateHandler() { if (videoElement && fullSubtitles.length > 0) updateSubtitleDisplay(videoElement.currentTime); }
 function initializeSubtitleDisplay() { if (settings.subtitleMode === 'disabled') return; videoElement = document.querySelector('video'); if (videoElement) { createSubtitleContainer(); videoElement.removeEventListener('timeupdate', videoTimeUpdateHandler); videoElement.addEventListener('timeupdate', videoTimeUpdateHandler); videoElement.addEventListener('seeking', videoTimeUpdateHandler); } }
 function parseVTT(d) {
