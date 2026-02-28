@@ -389,7 +389,16 @@ function updateSubtitleDisplay(c) {
         if (en !== '&nbsp;') {
             en = markAdvancedWords(en);
         }
-        const h = `<div class="sub-pair"><div class="sub-cn">${zh}</div><div class="sub-en">${en}</div></div>`;
+
+        // Conditionally render only necessary subtitle divs
+        let h = '<div class="sub-pair">';
+        if (zh !== '&nbsp;') {
+            h += `<div class="sub-cn">${zh}</div>`;
+        }
+        if (en !== '&nbsp;') {
+            h += `<div class="sub-en">${en}</div>`;
+        }
+        h += '</div>';
         if (subtitleContainer.innerHTML !== h) {
             subtitleContainer.innerHTML = h;
             subtitleContainer.style.display = 'block';
