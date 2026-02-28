@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "myVideo Dual Transcript (V4.0 Passive Stable)",
-  "version": "4.0.1",
+  "name": "MyVideo 雙語字幕小幫手 (MyVideo DualSub)",
+  "version": "4.0.5",
   "description": "被動監聽版：需手動觸發原廠字幕。支援單選模式與原廠字幕隱藏。",
   "permissions": [
     "scripting",
@@ -9,18 +9,24 @@
     "webRequest"
   ],
   "host_permissions": [
-    "https://*.myvideo.net.tw/*"
+    "https://*.myvideo.net.tw/*",
+    "https://*.cdn.tfn.net.tw/*",
+    "https://vodstrm.myvideo.net.tw/*"
   ],
   "background": {
     "service_worker": "background.js"
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "myVideo 字幕設定"
+    "default_title": "雙語字幕小幫手"
   },
   "content_scripts": [
     {
-      "matches": ["https://*.myvideo.net.tw/*"],
+      "matches": [
+        "https://*.myvideo.net.tw/*",
+        "https://*.cdn.tfn.net.tw/*",
+        "https://vodstrm.myvideo.net.tw/*"
+      ],
       "js": ["content_script.js"],
       "css": ["styles.css"],
       "run_at": "document_end"

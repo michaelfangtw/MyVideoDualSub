@@ -1,4 +1,4 @@
-# myVideo Dual Transcript Plugin | myVideo 雙語字幕外掛
+# MyVideo 雙語字幕小幫手 (MyVideo DualSub)
 
 A Chrome/Edge extension that enables **bilingual subtitles (English/Chinese)** for myVideo streaming content with flexible display modes.
 
@@ -174,12 +174,12 @@ cd MyVideoDualTranscripts
 ✅ After loading successfully:
    - Plugin appears in the extensions list
    - Icon shows in toolbar (top-right)
-   - Plugin name: "myVideo Dual Transcript (V4.0 Passive Stable)"
+   - Plugin name: "MyVideo 雙語字幕小幫手 (MyVideo DualSub)"
 
 ✅ 成功載入後：
    - 外掛出現在延伸功能清單中
    - 圖示顯示在工具列（右上角）
-   - 外掛名稱："myVideo Dual Transcript (V4.0 Passive Stable)"
+   - 外掛名稱："MyVideo 雙語字幕小幫手 (MyVideo DualSub)"
 ```
 
 ---
@@ -269,8 +269,8 @@ cd MyVideoDualTranscripts
 - Click the **Extensions icon** (拼圖片) in your toolbar
   點擊工具列中的**延伸功能圖示**（拼圖片）
 
-- Find "myVideo Dual Transcript"
-  找到「myVideo Dual Transcript」
+- Find "MyVideo 雙語字幕小幫手 (MyVideo DualSub)"
+  找到「MyVideo 雙語字幕小幫手 (MyVideo DualSub)」
 
 - Click the **pin icon** to pin it to your toolbar
   點擊**釘選圖示**以將其釘選到工具列
@@ -303,8 +303,8 @@ These are safe and necessary. Click **Allow** when prompted.
 2. Go to `chrome://extensions/`
    前往 `chrome://extensions/`
 
-3. Find "myVideo Dual Transcript" in the list
-   在清單中找到「myVideo Dual Transcript」
+3. Find "MyVideo 雙語字幕小幫手 (MyVideo DualSub)" in the list
+   在清單中找到「MyVideo 雙語字幕小幫手 (MyVideo DualSub)」
 
 4. Click the **Reload** icon (circular arrow)
    點擊**重新載入**圖示（圓形箭頭）
@@ -321,8 +321,8 @@ These are safe and necessary. Click **Allow** when prompted.
 1. Go to `chrome://extensions/` (or `edge://extensions/`)
    前往 `chrome://extensions/` 或 `edge://extensions/`
 
-2. Find "myVideo Dual Transcript"
-   找到「myVideo Dual Transcript」
+2. Find "MyVideo 雙語字幕小幫手 (MyVideo DualSub)"
+   找到「MyVideo 雙語字幕小幫手 (MyVideo DualSub)」
 
 3. Click the **Remove** button (or trash icon)
    點擊**移除**按鈕（或垃圾桶圖示）
@@ -656,13 +656,53 @@ Found a bug or have a feature request?
 
 ## Changelog | 更新日誌
 
-### v3.0.0 (Current / 目前)
+### v4.0.5 (Current / 目前)
+
+- 🌐 Support for multiple CDN sources / 支援多個 CDN 來源
+- ✅ Added `vodstrm.myvideo.net.tw` CDN support / 新增 vodstrm CDN 支援
+- ✅ Added third-party CDN support (`*.cdn.tfn.net.tw`) / 支援第三方 CDN
+- 🔧 **CRITICAL FIX**: Updated manifest.json `host_permissions` to match webRequest URL patterns / **關鍵修復**：更新 manifest.json 的 host_permissions 以符合 webRequest URL 模式
+- ✅ Content scripts now load on all supported CDN domains / 內容腳本現在在所有支援的 CDN 域上加載
+- 🐛 Better error handling in fetch operations / 改進 fetch 錯誤處理
+- 📊 Enhanced logging with status codes / 增強日誌含狀態碼
+- 🔍 Skip already-processed URLs more efficiently / 更有效地跳過已處理的 URL
+
+### v4.0.4
+
+- 🔍 Enhanced background worker logging / 增強背景工作者日誌
+- 📬 Added detailed message passing logs / 添加詳細的訊息傳遞日誌
+- 🐛 Better error reporting for fetch failures / 改進 fetch 失敗的錯誤報告
+- 📖 Created comprehensive DEBUG_GUIDE.md / 創建完整的調試指南
+- ✅ Tracks message delivery to content script / 追蹤訊息傳遞到內容腳本
+
+### v4.0.3
+
+- 🔧 Enhanced VTT parser with better metadata filtering / 增強 VTT 解析器，更好地過濾元數據
+- 🐛 Skip X-TIMESTAMP-MAP and other metadata lines / 跳過 X-TIMESTAMP-MAP 等元數據行
+- 📊 Improved whitespace handling and HTML tag removal / 改進空白處理和 HTML 標籤移除
+- 🎯 Better cue ID filtering / 改進提示 ID 過濾
+- 🔍 Comprehensive debugging logs for URL detection and subtitle parsing / 完整的調試日誌用於 URL 偵測和字幕解析
+- ✅ Validates timestamps before adding subtitles / 添加前驗證時間戳
+
+### v4.0.2
+
+- 🐛 Fixed VTT parser regex pattern / 修復 VTT 解析器正則模式
+- 🔧 Improved timeStringToSeconds() to handle all timestamp formats / 改進時間戳解析，支援所有格式
+- 📊 Better line-by-line parsing instead of block splitting / 改用逐行解析而非塊分割
+- ✅ Now correctly handles VTT files with speaker labels and complex formatting / 正確處理包含講者標籤和複雜格式的 VTT 檔案
+
+### v4.0.1
+
+- 🔄 Passive listening mode / 被動監聽模式
+- 💾 Support for settings persistence / 設定持久化
+- 🎨 Single radio button selection UI / 單選按鈕介面
+
+### v3.0.0
 
 - ✨ Radio button UI for subtitle modes / 字幕模式的單選按鈕 UI
 - 🔄 Real-time mode switching without refresh / 無需重新整理的即時模式切換
 - 📊 Improved subtitle merging algorithm / 改進的字幕合併演算法
 - 🎨 Enhanced styling with backdrop blur / 帶有背景模糊的增強樣式
-- 🐛 Fixed edge cases in VTT parsing / 修復 VTT 解析中的邊界情況
 
 ### v2.0.0
 
