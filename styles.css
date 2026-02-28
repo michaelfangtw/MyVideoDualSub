@@ -31,7 +31,7 @@
 
 /* 中文行樣式 (永遠在上方) - 亮藍色 */
 .sub-cn {
-    font-size: 26px;
+    font-size: 28px;
     color: #1FD9FF; /* 更亮的藍色 */
     font-weight: 700;
     text-shadow: 0 3px 14px rgba(0, 0, 0, 0.95), 0 0 22px rgba(31, 217, 255, 0.7), 0 0 10px rgba(0, 0, 0, 0.8);
@@ -64,7 +64,7 @@
 }
 :fullscreen .sub-cn,
 :-webkit-full-screen .sub-cn {
-    font-size: 36px;
+    font-size: 40px;
     letter-spacing: 0.4px;
     text-shadow: 0 4px 18px rgba(0, 0, 0, 0.95), 0 0 28px rgba(31, 217, 255, 0.8), 0 0 12px rgba(0, 0, 0, 0.85);
 }
