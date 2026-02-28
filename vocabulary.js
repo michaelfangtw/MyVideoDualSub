@@ -214,7 +214,9 @@ function markAdvancedWords(text) {
 
     return text.replace(/\b([a-z'-]+)\b/gi, (match) => {
         if (isAdvancedWord(match)) {
-            return `<span class="advanced-word" data-word="${match.toLowerCase()}" title="Advanced word - hover to see definition">${match}*</span>`;
+            const word = match.toLowerCase();
+            const wiktionaryUrl = `https://en.wiktionary.org/wiki/${encodeURIComponent(word)}`;
+            return `<span class="advanced-word" data-word="${word}" title="Click to view definition" onclick="window.open('${wiktionaryUrl}', '_blank')" style="cursor: pointer;">${match}*</span>`;
         }
         return match;
     });
