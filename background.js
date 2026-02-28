@@ -157,6 +157,7 @@ function translateTextsWithLibreTranslate(texts, sourceCode, targetCode) {
         // 將翻譯結果按分隔符號分割回來
         const translatedTexts = data.translatedText.split('\n|||SEP|||\n');
         console.log(`[Background] ✅ LibreTranslate response received: ${translatedTexts.length} texts`);
+        console.log(`[Background] 📝 First translation sample: ${translatedTexts[0]?.substring(0, 80) || '(empty)'}`);
         return translatedTexts;
     });
 }
