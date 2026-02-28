@@ -4,7 +4,7 @@ A Chrome/Edge extension that enables **bilingual subtitles (English/Chinese)** f
 
 一個 Chrome/Edge 延伸功能，為 myVideo 串流內容啟用**雙語字幕（英文/中文）**，具有靈活的顯示模式。
 
-![Version](https://img.shields.io/badge/version-3.0.0-blue)
+![Version](https://img.shields.io/badge/version-1.7-blue)
 ![Manifest](https://img.shields.io/badge/manifest-v3-green)
 ![License](https://img.shields.io/badge/license-MIT-orange)
 
@@ -632,14 +632,263 @@ F12 on any myVideo page → Console tab / myVideo 頁面上的 F12 → 控制台
 - `[Background]` - VTT detection and fetching / VTT 偵測和抓取
 - `[Dual Subtitle]` - Interceptor module / 攔截器模組
 
+## AI Translation (v1.7+) | AI 翻譯功能 (v1.7+)
+
+### Overview | 概述
+
+v1.7 引入 **Microsoft Translator API** 整合，透過 AI 自動翻譯缺失的字幕。
+
+Starting from v1.7, the extension supports **Microsoft Translator API** for automatic AI-powered subtitle translation when native subtitles are unavailable.
+
+### What is AI Translation? | 什麼是 AI 翻譯？
+
+When myVideo doesn't provide both English and Chinese subtitles for a video, the extension can now:
+- 當 myVideo 視訊沒有同時提供英文和中文字幕時，外掛現在可以：
+
+✅ **Auto-Detect Missing Subtitles** - Detects which language is missing
+✅ **自動偵測缺失字幕** - 偵測缺失的語言
+
+✅ **Translate on-the-fly** - Uses Microsoft Translator to generate the missing subtitle in real-time
+✅ **即時翻譯** - 使用 Microsoft Translator 即時生成缺失的字幕
+
+✅ **Mark AI Translations** - Shows Ⓜ️ icon to indicate AI-translated text
+✅ **標記 AI 翻譯** - 顯示 Ⓜ️ 圖示表示 AI 翻譯的文字
+
+### How to Enable AI Translation | 如何啟用 AI 翻譯
+
+#### Step 1: Get Azure Credentials | 步驟 1：取得 Azure 認證
+
+1. Visit [Azure Portal](https://portal.azure.com/)
+   訪問 [Azure 入口網站](https://portal.azure.com/)
+
+2. Create a free Azure account (if you don't have one)
+   建立免費的 Azure 帳戶（如果還沒有的話）
+
+3. Create a new **Translator** resource:
+   建立新的 **Translator** 資源：
+   - Search "Translator" in the search bar
+     在搜尋欄搜尋「Translator」
+   - Click "Create"
+     點擊「建立」
+   - Select your resource group and region
+     選擇您的資源群組和區域
+   - Choose **Free (F0)** tier for testing
+     選擇 **Free (F0)** 層進行測試
+   - Complete the setup
+     完成設定
+
+4. Get your credentials:
+   取得您的認證：
+   - Go to your Translator resource
+     前往您的 Translator 資源
+   - Click **Keys and Endpoint** (左側功能表)
+     點擊**金鑰和端點**
+   - Copy **Key 1** (API Key)
+     複製**金鑰 1**（API 金鑰）
+   - Note the **Region** (e.g., `eastasia`, `eastus`)
+     記下**區域**（例如 `eastasia`、`eastus`）
+
+#### Step 2: Configure in Extension | 步驟 2：在延伸功能中配置
+
+1. Click the extension icon in toolbar
+   點擊工具列中的延伸功能圖示
+
+2. Go to **Microsoft Translator 設定** tab
+   前往 **Microsoft Translator 設定** 標籤
+
+3. **Paste API Key:**
+   **貼上 API 金鑰：**
+   - Paste your Azure Translator API Key into the text field
+     將 Azure Translator API 金鑰貼到文字欄位
+   - Minimum 20 characters (Azure keys are 32 chars)
+     最少 20 個字元（Azure 金鑰通常是 32 個字元）
+
+4. **Select Region:**
+   **選擇區域：**
+   - Choose the region where you created the Translator resource
+     選擇您建立 Translator 資源的區域
+   - Common regions:
+     常見區域：
+     - 🌏 **eastasia** (Asia) - 推薦用於亞洲
+     - 🌍 **eastus** (USA - East)
+     - 🌎 **westus** (USA - West)
+     - 🇯🇵 **japaneast** (Japan)
+     - 🇦🇺 **australiaeast** (Australia)
+
+5. **Test Connection:**
+   **測試連線：**
+   - Click **測試 Translator API** button
+     點擊**測試 Translator API** 按鈕
+   - Wait for success message ✅
+     等待成功訊息 ✅
+   - If failed, check your API Key and region
+     如果失敗，檢查您的 API 金鑰和區域
+
+#### Step 3: Use AI Translation | 步驟 3：使用 AI 翻譯
+
+Once configured:
+設定完成後：
+
+1. Watch any myVideo video
+   觀看任何 myVideo 視訊
+
+2. If a subtitle language is missing, it will auto-translate
+   如果缺少字幕語言，它會自動翻譯
+
+3. **AI Translated text shows with Ⓜ️ icon:**
+   **AI 翻譯的文字顯示 Ⓜ️ 圖示：**
+   ```
+   Success: Ⓜ️ /AI翻譯/ [translated subtitle]
+   Failed:  Ⓜ️ /AI翻譯/ ───────────────────
+   ```
+
+### Supported Languages | 支援的語言
+
+| Language | Code | Support |
+|----------|------|---------|
+| English | `en` | ✅ Supported |
+| Simplified Chinese | `zh-Hans` | ✅ Supported |
+| Traditional Chinese | `zh-Hant` | ✅ Supported |
+| Cantonese | `yue` | ✅ Supported |
+
+### API Usage & Pricing | API 使用量與定價
+
+**Azure Translator Free Tier (F0):**
+- **2M characters/month** free
+- No credit card required
+- Generous limits for personal use
+
+**Azure Translator Paid Tiers:**
+- **Pay-as-you-go**: $15 per 1M characters
+- **Standard**: Discounted rates for high volume
+
+**Check your usage:**
+檢查您的使用情況：
+1. Azure Portal → Your Translator resource
+2. Click **Monitoring** → **Metrics**
+3. View character count over time
+
+### Troubleshooting AI Translation | AI 翻譯疑難排解
+
+#### Problem: "API Key 無效已過期" (Invalid/Expired API Key)
+
+**Solution | 解決方案：**
+
+1. Check your API Key in Azure Portal
+   在 Azure 入口網站中檢查您的 API 金鑰
+   - Go to **Keys and Endpoint**
+   - Make sure **Key 1** or **Key 2** is accessible
+   - Regenerate if needed
+
+2. Paste fresh key into extension
+   將新金鑰貼到延伸功能中
+
+3. Test connection again
+   再次測試連線
+
+#### Problem: "Cannot reach API endpoint"
+
+**Solution | 解決方案：**
+
+1. Verify region is correct
+   驗證區域是否正確
+   - Check Azure Portal for exact region name
+   - Common issue: using region different from where resource was created
+
+2. Check internet connection
+   檢查網際網路連線
+
+3. Verify API Key is valid
+   驗證 API 金鑰有效
+
+#### Problem: "Translation slow or timing out"
+
+**Solution | 解決方案：**
+
+- Normal: ~1-2 seconds per subtitle batch
+- If timeout: Your API quota may be exceeded
+- Check usage in Azure → Monitoring → Metrics
+- Wait for monthly quota reset or upgrade plan
+
+#### Problem: "Subtitles not translating despite API setup"
+
+**Solution | 解決方案：**
+
+1. Check if **both languages** are actually needed
+   檢查是否**真的需要兩種語言**
+   - If myVideo already provides both, no translation needed
+
+2. Open DevTools (F12) and check Console
+   開啟開發者工具 (F12) 並檢查控制台
+   - Look for error messages
+   - Check background worker logs
+
+3. Make sure subtitle mode is set to a bilingual mode
+   確保字幕模式設定為雙語模式
+   - Not "關閉外掛" (Disabled)
+   - Should be "英文 / 中文" or "中文 / 英文"
+
+### Display Format | 顯示格式
+
+**When translation succeeds:**
+當翻譯成功時：
+```
+Ⓜ️ /AI翻譯/ 這是 AI 翻譯的字幕
+```
+
+**When translation fails:**
+當翻譯失敗時：
+```
+Ⓜ️ /AI翻譯/ ───────────────────
+(shows placeholder, no error pop-up)
+(顯示佔位符，無錯誤彈出視窗)
+```
+
+### Privacy & Security | 隱私與安全
+
+**Data Sent to Microsoft:**
+只有字幕文字被發送到 Microsoft Translator API
+
+- ✅ Text is encrypted in transit (HTTPS)
+- ✅ Microsoft doesn't store your subtitles (except for abuse detection)
+- ✅ No personal data except subtitles
+- ✅ Your API Key is stored locally in browser
+
+**Recommendations:**
+- Keep your API Key private
+- Don't share your Azure subscription
+- Monitor your API usage in Azure Portal
+- Regenerate keys if you believe they're compromised
+
+### Advanced: Using Different Microsoft Regions | 進階：使用不同的 Microsoft 區域
+
+If you have multiple Azure subscriptions in different regions, you can switch:
+
+1. Open extension popup
+2. Go to **Microsoft Translator 設定**
+3. Change the region dropdown
+4. Test connection with new region
+5. Region is automatically saved
+
+**Supported Regions:**
+```
+East Asia:     eastasia (推薦), southeastasia
+Americas:      eastus, westus, westus2, centralus
+Europe:        westeurope, northeurope, uksouth
+Pacific:       japaneast, japanwest, australiaeast
+Special:       canadacentral, switzerlandnorth, global
+```
+
 ## Future Improvements | 未來改進
 
 - [ ] Support for more streaming platforms / 支援更多串流平台
 - [ ] Custom font size/color preferences / 自訂字體大小/顏色偏好設定
 - [ ] Subtitle position adjustment / 字幕位置調整
-- [ ] Translation service integration / 翻譯服務整合
+- [x] ~~Translation service integration~~ / ~~翻譯服務整合~~ (✅ Completed in v1.7)
 - [ ] Keyboard shortcuts for mode switching / 模式切換的鍵盤快捷鍵
 - [ ] Caching frequently-used subtitle pairs / 緩存常用字幕對
+- [ ] Offline translation models / 離線翻譯模型
+- [ ] Multi-language support (beyond EN/ZH) / 多語言支援（超越英文/中文）
 
 ## Browser Compatibility | 瀏覽器相容性
 
@@ -667,62 +916,44 @@ Found a bug or have a feature request?
 
 ## Changelog | 更新日誌
 
-### v4.0.5 (Current / 目前)
+### v1.7 (Current / 目前) - Microsoft Translator Integration
 
-- 🌐 Support for multiple CDN sources / 支援多個 CDN 來源
-- ✅ Added `vodstrm.myvideo.net.tw` CDN support / 新增 vodstrm CDN 支援
-- ✅ Added third-party CDN support (`*.cdn.tfn.net.tw`) / 支援第三方 CDN
-- 🔧 **CRITICAL FIX**: Updated manifest.json `host_permissions` to match webRequest URL patterns / **關鍵修復**：更新 manifest.json 的 host_permissions 以符合 webRequest URL 模式
-- ✅ Content scripts now load on all supported CDN domains / 內容腳本現在在所有支援的 CDN 域上加載
-- 🐛 Better error handling in fetch operations / 改進 fetch 錯誤處理
-- 📊 Enhanced logging with status codes / 增強日誌含狀態碼
-- 🔍 Skip already-processed URLs more efficiently / 更有效地跳過已處理的 URL
+- 🤖 **Microsoft Translator API Integration** - AI-powered subtitle translation when subtitles are missing
+- 🤖 **Microsoft Translator API 整合** - 當字幕缺失時使用 AI 翻譯功能
+- Ⓜ️ **AI Translation Marking** - Display Ⓜ️ icon for machine-translated subtitles
+- Ⓜ️ **AI 翻譯標記** - 為 AI 翻譯的字幕顯示 Ⓜ️ 圖示
+- ⚙️ **Region Configuration** - User-configurable Azure region selection for API calls
+- ⚙️ **區域配置** - 可由使用者設定的 Azure 區域選擇
+- 🔐 **Secure Credential Storage** - API keys stored locally in browser storage
+- 🔐 **安全認證儲存** - API 金鑰儲存在瀏覽器本地儲存空間
+- ✅ **Comprehensive Testing** - Built-in connection test for translator API
+- ✅ **全面測試** - 內建翻譯 API 連線測試
+- 🔧 Support for multiple CDN sources / 支援多個 CDN 來源
+- 📊 Enhanced logging and error handling / 增強日誌和錯誤處理
 
-### v4.0.4
+### v1.1 - AI Translation with Robot Icon
 
-- 🔍 Enhanced background worker logging / 增強背景工作者日誌
-- 📬 Added detailed message passing logs / 添加詳細的訊息傳遞日誌
-- 🐛 Better error reporting for fetch failures / 改進 fetch 失敗的錯誤報告
-- 📖 Created comprehensive DEBUG_GUIDE.md / 創建完整的調試指南
-- ✅ Tracks message delivery to content script / 追蹤訊息傳遞到內容腳本
+- 🤖 **AI Translation with LibreTranslate** (initial implementation)
+- 🤖 **使用 LibreTranslate 的 AI 翻譯**（初始實現）
+- 🎨 **Robot Icon for Translations** - Display 🤖 emoji for machine-translated text
+- 🎨 **翻譯機器人圖示** - 為機器翻譯的文字顯示 🤖 表情符號
+- 📝 **Improved Logging** - Enhanced subtitle detection and translation mode logging
+- 📝 **改進的日誌** - 增強的字幕偵測和翻譯模式日誌
 
-### v4.0.3
+### v1.0 - Initial Dual Subtitle Support
 
-- 🔧 Enhanced VTT parser with better metadata filtering / 增強 VTT 解析器，更好地過濾元數據
-- 🐛 Skip X-TIMESTAMP-MAP and other metadata lines / 跳過 X-TIMESTAMP-MAP 等元數據行
-- 📊 Improved whitespace handling and HTML tag removal / 改進空白處理和 HTML 標籤移除
-- 🎯 Better cue ID filtering / 改進提示 ID 過濾
-- 🔍 Comprehensive debugging logs for URL detection and subtitle parsing / 完整的調試日誌用於 URL 偵測和字幕解析
-- ✅ Validates timestamps before adding subtitles / 添加前驗證時間戳
-
-### v4.0.2
-
-- 🐛 Fixed VTT parser regex pattern / 修復 VTT 解析器正則模式
-- 🔧 Improved timeStringToSeconds() to handle all timestamp formats / 改進時間戳解析，支援所有格式
-- 📊 Better line-by-line parsing instead of block splitting / 改用逐行解析而非塊分割
-- ✅ Now correctly handles VTT files with speaker labels and complex formatting / 正確處理包含講者標籤和複雜格式的 VTT 檔案
-
-### v4.0.1
-
-- 🔄 Passive listening mode / 被動監聽模式
-- 💾 Support for settings persistence / 設定持久化
-- 🎨 Single radio button selection UI / 單選按鈕介面
-
-### v3.0.0
-
-- ✨ Radio button UI for subtitle modes / 字幕模式的單選按鈕 UI
-- 🔄 Real-time mode switching without refresh / 無需重新整理的即時模式切換
-- 📊 Improved subtitle merging algorithm / 改進的字幕合併演算法
-- 🎨 Enhanced styling with backdrop blur / 帶有背景模糊的增強樣式
-
-### v2.0.0
-
-- Initial dual subtitle support / 初始雙字幕支援
-- Basic English/Chinese merging / 基本英文/中文合併
-
-### v1.0.0
-
-- Single language subtitle extraction / 單語言字幕提取
+- ✨ **Initial Release** - Dual subtitle support for myVideo
+- ✨ **初始版本** - MyVideo 的雙字幕支援
+- 🎬 Bilingual subtitle display (English & Chinese)
+- 🎬 雙語字幕顯示（英文和中文）
+- 🔄 Multiple display modes (English Only, Eng/Zho, Zho/Eng, Disabled)
+- 🔄 多種顯示模式（英文只、英文/中文、中文/英文、關閉）
+- ⚙️ Real-time mode switching without page refresh
+- ⚙️ 無需重新整理頁面的即時模式切換
+- 📊 VTT subtitle parsing and intelligent merging by timestamp
+- 📊 VTT 字幕解析和按時間戳的智能合併
+- 🎨 Responsive design with backdrop blur effects
+- 🎨 具有背景模糊效果的響應式設計
 
 ## Support | 支援
 
