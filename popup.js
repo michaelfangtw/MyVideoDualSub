@@ -1,7 +1,7 @@
 // popup.js (V4.0 Radio Buttons)
 document.addEventListener('DOMContentLoaded', () => {
     const radios = document.querySelectorAll('input[name="mode"]');
-    const defaultSettings = { subtitleMode: 'eng_zho' };
+    const defaultSettings = { subtitleMode: 'eng' };
 
     chrome.storage.sync.get(defaultSettings, (items) => {
         const currentMode = items.subtitleMode;

@@ -1,12 +1,12 @@
-/* styles.css 字幕樣式 V2 */
+/* styles.css 字幕樣式 V4 - Fullscreen Compatible */
 
 #myvideo-dual-subtitle-container {
     position: fixed;
-    bottom: 100px;
+    bottom: 10vh;
     left: 50%;
+    width: 90vw;
+    max-width: 1200px;
     transform: translateX(-50%);
-    width: auto;
-    max-width: 90%;
     text-align: center;
     z-index: 2147483647;
     pointer-events: none;
@@ -45,10 +45,16 @@
     line-height: 1.2;
 }
 
-/* 全螢幕調整 */
+/* 全螢幕調整 - 使用 viewport 相對單位確保在全螢幕時仍然可見 */
 :fullscreen #myvideo-dual-subtitle-container,
 :-webkit-full-screen #myvideo-dual-subtitle-container {
-     bottom: 130px;
+     bottom: 8vh !important;
 }
-:fullscreen .sub-cn { font-size: 34px; }
-:fullscreen .sub-en { font-size: 24px; }
+:fullscreen .sub-cn,
+:-webkit-full-screen .sub-cn {
+    font-size: 34px;
+}
+:fullscreen .sub-en,
+:-webkit-full-screen .sub-en {
+    font-size: 24px;
+}

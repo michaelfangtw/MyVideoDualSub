@@ -559,6 +559,17 @@ The plugin uses **timestamp overlap** to align subtitles, not exact matching. If
 - Check myVideo's original subtitles in settings
   檢查 myVideo 設定中的原始字幕
 
+### Issue: Subtitles disappear in fullscreen | 問題：全螢幕時字幕消失
+
+- This is a known limitation with myVideo's fullscreen player
+  這是 myVideo 全螢幕播放器的已知限制
+
+- **Workaround / 解決方案：**
+  - Watch in windowed mode (not fullscreen)
+    在視窗模式下觀看（不用全螢幕）
+  - Or use "Disable plugin" to see original subtitles
+    或使用「關閉外掛」查看原廠字幕
+
 ## Performance Considerations | 效能考量
 
 - **Lightweight**: < 30KB total size / **輕量級**：< 30KB 總大小

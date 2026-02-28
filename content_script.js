@@ -7,7 +7,7 @@ let subtitleContainer = null;
 let lastProcessedUrl = '';
 
 // 設定狀態變數 (預設值)
-let settings = { subtitleMode: 'eng_zho' };
+let settings = { subtitleMode: 'eng' };
 
 // --- 1. 初始化與設定讀取 ---
 function initialize() {
@@ -142,11 +142,19 @@ function processReceivedSubtitle(data, url, langCode) {
         console.log(`[Content] 🎯 Mode: ${settings.subtitleMode}, eng=${engTracks.length}, zho=${zhoTracks.length}`);
 
         switch (settings.subtitleMode) {
+            case 'eng':
             case 'eng_only':
                 // 只顯示英文。如果沒抓到英文，就退回顯示中文。
                 const finalEngTracks = engTracks.length > 0 ? engTracks : zhoTracks;
                 fullSubtitles = finalEngTracks.map(item => ({ start: item.start, end: item.end, text: item.text, translation: '' }));
-                console.log(`[Content] eng_only: showing ${fullSubtitles.length} subtitles`);
+                console.log(`[Content] eng: showing ${fullSubtitles.length} subtitles`);
+                break;
+
+            case 'zho':
+                // 只顯示中文。如果沒抓到中文，就退回顯示英文。
+                const finalZhoTracks = zhoTracks.length > 0 ? zhoTracks : engTracks;
+                fullSubtitles = finalZhoTracks.map(item => ({ start: item.start, end: item.end, text: item.text, translation: '' }));
+                console.log(`[Content] zho: showing ${fullSubtitles.length} subtitles`);
                 break;
 
             case 'eng_zho':
