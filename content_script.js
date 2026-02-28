@@ -357,8 +357,31 @@ function updateSubtitleDisplay(c) {
     if (!subtitleContainer || settings.subtitleMode === 'disabled') return;
     const s = fullSubtitles.find(sub => c >= (sub.start - 0.1) && c <= sub.end);
     if (s && (s.text || s.translation)) {
-        let zh = s.text || '&nbsp;';
-        let en = s.translation || '&nbsp;';
+        let zh = '', en = '';
+
+        // Map subtitle content to correct display variables based on mode
+        if (settings.subtitleMode === 'eng' || settings.subtitleMode === 'eng_only') {
+            // English-only: English subtitle in text field
+            en = s.text || '&nbsp;';
+            zh = '&nbsp;';
+        } else if (settings.subtitleMode === 'zho' || settings.subtitleMode === 'zho_only') {
+            // Chinese-only: Chinese subtitle in text field
+            zh = s.text || '&nbsp;';
+            en = '&nbsp;';
+        } else if (settings.subtitleMode === 'eng_zho') {
+            // English on top, Chinese on bottom: English in text, Chinese in translation
+            en = s.text || '&nbsp;';
+            zh = s.translation || '&nbsp;';
+        } else if (settings.subtitleMode === 'zho_eng') {
+            // Chinese on top, English on bottom: Chinese in text, English in translation
+            zh = s.text || '&nbsp;';
+            en = s.translation || '&nbsp;';
+        } else if (settings.subtitleMode === 'eng_zho_translate') {
+            // English on top, translated Chinese on bottom: English in text, translation in translation
+            en = s.text || '&nbsp;';
+            zh = s.translation || '&nbsp;';
+        }
+
         if (zh === '&nbsp;' && en === '&nbsp;') {
             subtitleContainer.style.display = 'none';
             return;
