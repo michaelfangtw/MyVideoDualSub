@@ -66,12 +66,10 @@ function fetchSubtitleData(url, langCode, tabId) {
                 url: url,
                 data: data,
                 langCode: langCode
-            }, (response) => {
-                if (chrome.runtime.lastError) {
-                    console.error(`[Background] ❌ Message send error (${langCode}):`, chrome.runtime.lastError.message);
-                } else {
-                    console.log(`[Background] ✅ Message sent (${langCode}) to tabId ${tabId}`);
-                }
+            }).then(() => {
+                console.log(`[Background] ✅ Message sent (${langCode}) to tabId ${tabId}`);
+            }).catch(err => {
+                console.error(`[Background] ❌ Message send error (${langCode}):`, err.message);
             });
         })
         .catch(err => {
@@ -90,15 +88,73 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             .catch(() => sendResponse({ success: false }));
         return true;
     }
-    // 【功能 2】翻譯候補 (模擬)
+    // 【功能 2】使用 LibreTranslate API 翻譯字幕
     if (request.action === "TRANSLATE_SUBTITLES") {
         const { subtitles, sourceLang } = request;
-        const translatedSubtitles = subtitles.map(sub => ({
-            start: sub.start, end: sub.end,
-            text: sourceLang === 'zho' ? sub.text : `[中模擬] ${sub.text}`,
-            translation: sourceLang === 'zho' ? `[EN Sim] ${sub.text}` : sub.text
-        }));
-        sendResponse({ translatedSubtitles: translatedSubtitles });
+        console.log(`[Background] 🌐 Translating ${subtitles.length} subtitles from ${sourceLang} using LibreTranslate`);
+
+        // 批量翻譯 - 將所有字幕文本合併翻譯以提高效率
+        const textsToTranslate = subtitles.map(sub => sub.text);
+        const sourceCode = sourceLang === 'zho' ? 'zh' : 'en';
+        const targetCode = sourceLang === 'zho' ? 'en' : 'zh';
+
+        translateTextsWithLibreTranslate(textsToTranslate, sourceCode, targetCode)
+            .then(translatedTexts => {
+                const translatedSubtitles = subtitles.map((sub, index) => ({
+                    start: sub.start,
+                    end: sub.end,
+                    text: sub.text,
+                    translation: translatedTexts[index] || ''
+                }));
+                console.log(`[Background] ✅ Translation completed: ${translatedSubtitles.length} subtitles`);
+                sendResponse({ translatedSubtitles: translatedSubtitles });
+            })
+            .catch(err => {
+                console.error(`[Background] ❌ Translation failed:`, err.message);
+                // 翻譯失敗時回傳原始字幕
+                const fallbackSubtitles = subtitles.map(sub => ({
+                    start: sub.start,
+                    end: sub.end,
+                    text: sub.text,
+                    translation: ''
+                }));
+                sendResponse({ translatedSubtitles: fallbackSubtitles });
+            });
         return true;
     }
 });
+
+// LibreTranslate API 翻譯函數
+function translateTextsWithLibreTranslate(texts, sourceCode, targetCode) {
+    const apiUrl = 'https://libretranslate.de/translate';
+
+    const payload = {
+        q: texts.join('\n|||SEP|||\n'), // 使用分隔符號分開多個文本
+        source: sourceCode,
+        target: targetCode,
+        format: 'text'
+    };
+
+    console.log(`[Background] 📤 Sending request to LibreTranslate: ${texts.length} texts`);
+
+    return fetch(apiUrl, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error(`LibreTranslate API error: ${res.status} ${res.statusText}`);
+        }
+        return res.json();
+    })
+    .then(data => {
+        if (!data.translatedText) {
+            throw new Error('No translation returned');
+        }
+        // 將翻譯結果按分隔符號分割回來
+        const translatedTexts = data.translatedText.split('\n|||SEP|||\n');
+        console.log(`[Background] ✅ LibreTranslate response received: ${translatedTexts.length} texts`);
+        return translatedTexts;
+    });
+}

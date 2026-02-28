@@ -11,17 +11,21 @@
     .radio-option input[type="radio"] { margin-right: 12px; accent-color: #2196F3; cursor: pointer; }
     .label-txt { font-size: 14px; color: #333; }
     .default-badge { color: #999; font-size: 12px; margin-left: 4px; }
+    .recommend-badge { color: #ff9800; font-size: 11px; margin-left: 4px; font-weight: bold; }
+    .new-badge { color: #f44336; font-size: 10px; margin-left: 4px; font-weight: bold; }
     .dual-label { color: #2196F3; font-weight: 500; }
+    .translate-desc { font-size: 11px; color: #666; display: block; margin-top: 2px; }
   </style>
 </head>
 <body>
   <h3>myVideo 字幕模式</h3>
   <div class="radio-group">
-    <label class="radio-option"><input type="radio" name="mode" value="disabled"><span class="label-txt">關閉外掛 (使用原廠)</span></label>
-    <label class="radio-option"><input type="radio" name="mode" value="eng"><span class="label-txt">英文<span class="default-badge">(預設)</span></span></label>
+    <label class="radio-option"><input type="radio" name="mode" value="disabled"><span class="label-txt">關閉外掛</span></label>
+    <label class="radio-option"><input type="radio" name="mode" value="eng"><span class="label-txt">英文 <span class="default-badge">(預設)</span> <span class="recommend-badge">推薦</span></span></label>
     <label class="radio-option"><input type="radio" name="mode" value="zho"><span class="label-txt">中文</span></label>
     <label class="radio-option"><input type="radio" name="mode" value="zho_eng"><span class="label-txt dual-label">中文 / 英文</span></label>
     <label class="radio-option"><input type="radio" name="mode" value="eng_zho"><span class="label-txt dual-label">英文 / 中文</span></label>
+    <label class="radio-option"><input type="radio" name="mode" value="eng_zho_translate"><span class="label-txt dual-label">英文/中文<span class="new-badge">NEW</span><span class="translate-desc">(LibreTranslate 英翻中)</span></span></label>
   </div>
   <script src="popup.js"></script>
 </body>

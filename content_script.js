@@ -144,29 +144,174 @@ function processReceivedSubtitle(data, url, langCode) {
         switch (settings.subtitleMode) {
             case 'eng':
             case 'eng_only':
-                // 只顯示英文。如果沒抓到英文，就退回顯示中文。
-                const finalEngTracks = engTracks.length > 0 ? engTracks : zhoTracks;
-                fullSubtitles = finalEngTracks.map(item => ({ start: item.start, end: item.end, text: item.text, translation: '' }));
-                console.log(`[Content] eng: showing ${fullSubtitles.length} subtitles`);
+                // 只顯示英文。如果沒抓到英文就不顯示。
+                fullSubtitles = engTracks.length > 0
+                    ? engTracks.map(item => ({ start: item.start, end: item.end, text: item.text, translation: '' }))
+                    : [];
+                console.log(`[Content] eng: showing ${fullSubtitles.length} English subtitles (no fallback to Chinese)`);
                 break;
 
             case 'zho':
-                // 只顯示中文。如果沒抓到中文，就退回顯示英文。
-                const finalZhoTracks = zhoTracks.length > 0 ? zhoTracks : engTracks;
-                fullSubtitles = finalZhoTracks.map(item => ({ start: item.start, end: item.end, text: item.text, translation: '' }));
-                console.log(`[Content] zho: showing ${fullSubtitles.length} subtitles`);
+                // 只顯示中文。如果沒抓到中文就不顯示。
+                fullSubtitles = zhoTracks.length > 0
+                    ? zhoTracks.map(item => ({ start: item.start, end: item.end, text: item.text, translation: '' }))
+                    : [];
+                console.log(`[Content] zho: showing ${fullSubtitles.length} Chinese subtitles (no fallback to English)`);
                 break;
 
             case 'eng_zho':
                 // 英文在上(text)，中文在下(translation)
-                fullSubtitles = mergeTracks(engTracks, zhoTracks);
-                console.log(`[Content] eng_zho: merged ${fullSubtitles.length} subtitles`);
+                if (engTracks.length > 0 && zhoTracks.length > 0) {
+                    fullSubtitles = mergeTracks(engTracks, zhoTracks);
+                    console.log(`[Content] eng_zho: merged ${fullSubtitles.length} subtitles (both available)`);
+                } else if (engTracks.length > 0) {
+                    // 只有英文，翻譯為中文
+                    console.log(`[Content] eng_zho: translating English to Chinese...`);
+                    chrome.runtime.sendMessage(
+                        { action: "TRANSLATE_SUBTITLES", subtitles: engTracks, sourceLang: 'eng' },
+                        (response) => {
+                            if (response && response.translatedSubtitles) {
+                                fullSubtitles = response.translatedSubtitles;
+                                console.log(`[Content] eng_zho: showing ${fullSubtitles.length} subtitles (translated)`);
+                                initializeSubtitleDisplay();
+                            } else {
+                                console.warn(`[Content] eng_zho: translation failed`);
+                                fullSubtitles = engTracks.map(item => ({ start: item.start, end: item.end, text: item.text, translation: '' }));
+                                initializeSubtitleDisplay();
+                            }
+                        }
+                    );
+                    return;
+                } else if (zhoTracks.length > 0) {
+                    // 只有中文，翻譯為英文放上方
+                    console.log(`[Content] eng_zho: translating Chinese to English...`);
+                    chrome.runtime.sendMessage(
+                        { action: "TRANSLATE_SUBTITLES", subtitles: zhoTracks, sourceLang: 'zho' },
+                        (response) => {
+                            if (response && response.translatedSubtitles) {
+                                fullSubtitles = response.translatedSubtitles.map(item => ({
+                                    start: item.start,
+                                    end: item.end,
+                                    text: item.translation, // 英文翻譯放上面
+                                    translation: item.text // 原始中文放下面
+                                }));
+                                console.log(`[Content] eng_zho: showing ${fullSubtitles.length} subtitles (translated)`);
+                                initializeSubtitleDisplay();
+                            } else {
+                                console.warn(`[Content] eng_zho: translation failed`);
+                                fullSubtitles = zhoTracks.map(item => ({ start: item.start, end: item.end, text: '', translation: item.text }));
+                                initializeSubtitleDisplay();
+                            }
+                        }
+                    );
+                    return;
+                } else {
+                    fullSubtitles = [];
+                }
                 break;
 
             case 'zho_eng':
                 // 中文在上(text)，英文在下(translation)
-                fullSubtitles = mergeTracks(zhoTracks, engTracks);
-                console.log(`[Content] zho_eng: merged ${fullSubtitles.length} subtitles`);
+                if (zhoTracks.length > 0 && engTracks.length > 0) {
+                    fullSubtitles = mergeTracks(zhoTracks, engTracks);
+                    console.log(`[Content] zho_eng: merged ${fullSubtitles.length} subtitles (both available)`);
+                } else if (zhoTracks.length > 0) {
+                    // 只有中文，翻譯為英文
+                    console.log(`[Content] zho_eng: translating Chinese to English...`);
+                    chrome.runtime.sendMessage(
+                        { action: "TRANSLATE_SUBTITLES", subtitles: zhoTracks, sourceLang: 'zho' },
+                        (response) => {
+                            if (response && response.translatedSubtitles) {
+                                fullSubtitles = response.translatedSubtitles;
+                                console.log(`[Content] zho_eng: showing ${fullSubtitles.length} subtitles (translated)`);
+                                initializeSubtitleDisplay();
+                            } else {
+                                console.warn(`[Content] zho_eng: translation failed`);
+                                fullSubtitles = zhoTracks.map(item => ({ start: item.start, end: item.end, text: item.text, translation: '' }));
+                                initializeSubtitleDisplay();
+                            }
+                        }
+                    );
+                    return;
+                } else if (engTracks.length > 0) {
+                    // 只有英文，翻譯為中文放上方
+                    console.log(`[Content] zho_eng: translating English to Chinese...`);
+                    chrome.runtime.sendMessage(
+                        { action: "TRANSLATE_SUBTITLES", subtitles: engTracks, sourceLang: 'eng' },
+                        (response) => {
+                            if (response && response.translatedSubtitles) {
+                                fullSubtitles = response.translatedSubtitles.map(item => ({
+                                    start: item.start,
+                                    end: item.end,
+                                    text: item.translation,
+                                    translation: item.text
+                                }));
+                                console.log(`[Content] zho_eng: showing ${fullSubtitles.length} subtitles (translated)`);
+                                initializeSubtitleDisplay();
+                            } else {
+                                console.warn(`[Content] zho_eng: translation failed`);
+                                fullSubtitles = engTracks.map(item => ({ start: item.start, end: item.end, text: '', translation: item.text }));
+                                initializeSubtitleDisplay();
+                            }
+                        }
+                    );
+                    return;
+                } else {
+                    fullSubtitles = [];
+                }
+                break;
+
+            case 'eng_zho_translate':
+                // 英文在上(text)，中文翻譯或原文在下(translation)
+                if (engTracks.length > 0 && zhoTracks.length > 0) {
+                    // 兩種都有，直接合併
+                    fullSubtitles = mergeTracks(engTracks, zhoTracks);
+                    console.log(`[Content] eng_zho_translate: merged ${fullSubtitles.length} subtitles (both available)`);
+                } else if (engTracks.length > 0) {
+                    // 只有英文，翻譯英文為中文
+                    console.log(`[Content] eng_zho_translate: translating English to Chinese...`);
+                    chrome.runtime.sendMessage(
+                        { action: "TRANSLATE_SUBTITLES", subtitles: engTracks, sourceLang: 'eng' },
+                        (response) => {
+                            if (response && response.translatedSubtitles) {
+                                fullSubtitles = response.translatedSubtitles;
+                                console.log(`[Content] eng_zho_translate: showing ${fullSubtitles.length} subtitles (translated)`);
+                                initializeSubtitleDisplay();
+                            } else {
+                                console.warn(`[Content] Translation failed`);
+                                fullSubtitles = engTracks.map(item => ({ start: item.start, end: item.end, text: item.text, translation: '' }));
+                                initializeSubtitleDisplay();
+                            }
+                        }
+                    );
+                    return;
+                } else if (zhoTracks.length > 0) {
+                    // 只有中文，翻譯中文為英文
+                    console.log(`[Content] eng_zho_translate: translating Chinese to English...`);
+                    chrome.runtime.sendMessage(
+                        { action: "TRANSLATE_SUBTITLES", subtitles: zhoTracks, sourceLang: 'zho' },
+                        (response) => {
+                            if (response && response.translatedSubtitles) {
+                                fullSubtitles = response.translatedSubtitles.map(item => ({
+                                    start: item.start,
+                                    end: item.end,
+                                    text: item.translation, // 英文翻譯放在上面
+                                    translation: item.text // 原始中文放在下面
+                                }));
+                                console.log(`[Content] eng_zho_translate: showing ${fullSubtitles.length} subtitles (translated)`);
+                                initializeSubtitleDisplay();
+                            } else {
+                                console.warn(`[Content] Translation failed`);
+                                fullSubtitles = zhoTracks.map(item => ({ start: item.start, end: item.end, text: item.text, translation: '' }));
+                                initializeSubtitleDisplay();
+                            }
+                        }
+                    );
+                    return;
+                } else {
+                    console.warn(`[Content] eng_zho_translate: No subtitles available`);
+                    fullSubtitles = [];
+                }
                 break;
         }
 
