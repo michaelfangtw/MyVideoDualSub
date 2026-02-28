@@ -395,15 +395,16 @@ function updateSubtitleDisplay(c) {
         }
 
         // Conditionally render only necessary subtitle divs
+        // English always on top, Chinese always on bottom
         let h = '<div class="sub-pair">';
+        if (en !== '&nbsp;') {
+            h += `<div class="sub-en">${en}</div>`;
+        }
         if (zh !== '&nbsp;') {
             // Use different class for translated Chinese (white color) vs original Chinese (blue)
             const isTranslated = settings.subtitleMode === 'eng_zho_translate' || settings.subtitleMode === 'zho_eng_translate';
             const cnClass = isTranslated ? 'sub-cn-translate' : 'sub-cn';
             h += `<div class="${cnClass}">${zh}</div>`;
-        }
-        if (en !== '&nbsp;') {
-            h += `<div class="sub-en">${en}</div>`;
         }
         h += '</div>';
 
