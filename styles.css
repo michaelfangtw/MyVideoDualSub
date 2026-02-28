@@ -38,12 +38,24 @@ body[data-subtitle-mode="zho"] .sub-pair {
     width: auto;
 }
 
-/* 中文行樣式 (永遠在上方) - 亮藍色 */
+/* 中文行樣式 - 原文 (永遠在上方) - 亮藍色 */
 .sub-cn {
     font-size: 28px;
     color: #1FD9FF; /* 更亮的藍色 */
     font-weight: 700;
     text-shadow: 0 3px 14px rgba(0, 0, 0, 0.95), 0 0 22px rgba(31, 217, 255, 0.7), 0 0 10px rgba(0, 0, 0, 0.8);
+    margin-bottom: 6px;
+    line-height: 1.35;
+    letter-spacing: 0.3px;
+    font-family: 'Noto Sans TC', -apple-system, sans-serif;
+}
+
+/* 中文行樣式 - 翻譯版 (機器翻譯) - 白色 */
+.sub-cn-translate {
+    font-size: 28px;
+    color: #FFFFFF; /* 白色 */
+    font-weight: 700;
+    text-shadow: 0 3px 14px rgba(0, 0, 0, 0.95), 0 0 20px rgba(255, 255, 255, 0.5), 0 0 10px rgba(0, 0, 0, 0.8);
     margin-bottom: 6px;
     line-height: 1.35;
     letter-spacing: 0.3px;
@@ -96,6 +108,13 @@ body[data-subtitle-mode="eng_zho_translate"] #myvideo-dual-subtitle-container {
     font-size: 40px;
     letter-spacing: 0.4px;
     text-shadow: 0 4px 18px rgba(0, 0, 0, 0.95), 0 0 28px rgba(31, 217, 255, 0.8), 0 0 12px rgba(0, 0, 0, 0.85);
+}
+
+:fullscreen .sub-cn-translate,
+:-webkit-full-screen .sub-cn-translate {
+    font-size: 40px;
+    letter-spacing: 0.4px;
+    text-shadow: 0 4px 18px rgba(0, 0, 0, 0.95), 0 0 26px rgba(255, 255, 255, 0.6), 0 0 12px rgba(0, 0, 0, 0.85);
 }
 :fullscreen .sub-en,
 :-webkit-full-screen .sub-en {
