@@ -199,53 +199,36 @@ function loadAllVocab() {
 }
 
 // 判斷單詞是否是進階單字
-// 邏輯：只有「不在 basic_vocab 中」的詞才標記為進階詞
+// 核心邏輯：basicwordlist.json (COCA) 中的詞 = 基本詞 (不標記)
+//          其他詞 = 進階詞 (標記)
 function isAdvancedWord(word) {
     const lowerWord = word.toLowerCase();
 
-    // 如果在基本詞彙 (COCA) 中 → 不標記
+    // 如果在基本詞彙 (COCA - basicwordlist.json) 中 → 不標記
     if (BASIC_VOCAB && BASIC_VOCAB.hasOwnProperty(lowerWord)) {
         return false;
     }
 
-    // 如果在本地進階詞庫或 wordlist 中 → 標記
-    if (ADVANCED_WORDS.hasOwnProperty(lowerWord)) {
-        return true;
-    }
-
-    if (WORDLIST && WORDLIST[lowerWord]) {
-        return true;
-    }
-
-    // 其他詞不標記
-    return false;
+    // 其他所有詞都是進階詞 (標記)
+    return true;
 }
 
-// 獲取單詞信息 (支援本地詞庫 + wordlist)
-// 只返回 B2+ 級別的詞彙 (中階及以上學習者需要)
+// 獲取單詞信息 (本地進階詞庫)
+// 只返回 ADVANCED_WORDS 中有定義的詞彙
 function getWordInfo(word) {
     const lowerWord = word.toLowerCase();
-    // 優先從本地詞庫 (有完整定義)
+    // 從本地詞庫獲取完整定義 (有級別、定義、例句)
     if (ADVANCED_WORDS[lowerWord]) {
         return ADVANCED_WORDS[lowerWord];
     }
-    // 從 wordlist 獲取基本信息
-    // wordlist.json 是 3000-5000+ 高頻詞
-    // 只返回真正的進階單詞 (不包含 A1-B1 常用詞)
-    if (WORDLIST && WORDLIST[lowerWord]) {
-        const rank = WORDLIST[lowerWord];
-        // 3000-4999: B2 intermediate level
-        // 5000+: C1-C2 advanced level
-        const tier = rank >= 5000 ? 2 : 1;
-        return {
-            rank: rank,
-            tier: tier,
-            level: tier === 1 ? 'B2' : 'C1',
-            definition: '',
-            examples: []
-        };
-    }
-    return null;
+    // 其他進階詞沒有詳細信息，返回通用進階詞標籤
+    return {
+        rank: 0,
+        tier: 1,
+        level: 'B2+',
+        definition: 'Advanced word',
+        examples: []
+    };
 }
 
 // 安全地創建Tooltip DOM
