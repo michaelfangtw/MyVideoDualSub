@@ -178,17 +178,17 @@ function loadWordlist() {
         });
 }
 
-// 異步載入 basic_vocab.json (COCA 所有詞)
+// 異步載入 basicwordlist.json (COCA 所有詞)
 function loadBasicVocab() {
     if (BASIC_VOCAB) return Promise.resolve();
-    return fetch(chrome.runtime.getURL('basic_vocab.json'))
+    return fetch(chrome.runtime.getURL('basicwordlist.json'))
         .then(r => r.json())
         .then(data => {
             BASIC_VOCAB = data.words || {};
-            console.log('[Vocabulary] Loaded', Object.keys(BASIC_VOCAB).length, 'words from basic_vocab');
+            console.log('[Vocabulary] Loaded', Object.keys(BASIC_VOCAB).length, 'words from basicwordlist');
         })
         .catch(e => {
-            console.warn('[Vocabulary] Failed to load basic_vocab:', e);
+            console.warn('[Vocabulary] Failed to load basicwordlist:', e);
             BASIC_VOCAB = {};
         });
 }

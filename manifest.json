@@ -36,7 +36,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["wordlist.json", "basic_vocab.json"],
+      "resources": ["wordlist.json", "basicwordlist.json"],
       "matches": ["<all_urls>"]
     }
   ]
