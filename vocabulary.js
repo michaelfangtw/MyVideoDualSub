@@ -161,8 +161,9 @@ const ADVANCED_WORDS = {
 
 // 全局詞頻資料
 let WORDLIST = null;
+let BASIC_VOCAB = null;
 
-// 異步載入 wordlist.json (3000-10000 詞)
+// 異步載入 wordlist.json (3000-5000 進階詞)
 function loadWordlist() {
     if (WORDLIST) return Promise.resolve();
     return fetch(chrome.runtime.getURL('wordlist.json'))
@@ -177,17 +178,46 @@ function loadWordlist() {
         });
 }
 
-// 判斷單詞是否需要標記 (檢查本地詞庫 + wordlist)
+// 異步載入 basic_vocab.json (COCA 所有詞)
+function loadBasicVocab() {
+    if (BASIC_VOCAB) return Promise.resolve();
+    return fetch(chrome.runtime.getURL('basic_vocab.json'))
+        .then(r => r.json())
+        .then(data => {
+            BASIC_VOCAB = data.words || {};
+            console.log('[Vocabulary] Loaded', Object.keys(BASIC_VOCAB).length, 'words from basic_vocab');
+        })
+        .catch(e => {
+            console.warn('[Vocabulary] Failed to load basic_vocab:', e);
+            BASIC_VOCAB = {};
+        });
+}
+
+// 同時載入兩個詞庫
+function loadAllVocab() {
+    return Promise.all([loadWordlist(), loadBasicVocab()]);
+}
+
+// 判斷單詞是否是進階單字
+// 邏輯：只有「不在 basic_vocab 中」的詞才標記為進階詞
 function isAdvancedWord(word) {
     const lowerWord = word.toLowerCase();
-    // 優先檢查本地詞庫 (21 個詞 + 定義 + 例句)
+
+    // 如果在基本詞彙 (COCA) 中 → 不標記
+    if (BASIC_VOCAB && BASIC_VOCAB.hasOwnProperty(lowerWord)) {
+        return false;
+    }
+
+    // 如果在本地進階詞庫或 wordlist 中 → 標記
     if (ADVANCED_WORDS.hasOwnProperty(lowerWord)) {
         return true;
     }
-    // 再檢查 wordlist (3000-10000 範圍)
+
     if (WORDLIST && WORDLIST[lowerWord]) {
         return true;
     }
+
+    // 其他詞不標記
     return false;
 }
 
@@ -349,8 +379,8 @@ function createTooltipContainer() {
 }
 
 // 初始化詞表（模組載入時）
-loadWordlist().catch(e => {
-    console.warn('[Vocabulary] Failed to initialize wordlist:', e);
+loadAllVocab().catch(e => {
+    console.warn('[Vocabulary] Failed to initialize vocabularies:', e);
 });
 
 // 匯出功能
