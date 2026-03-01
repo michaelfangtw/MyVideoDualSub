@@ -22,24 +22,6 @@ const ADVANCED_WORDS = {
             "The view from the mountain was remarkable."
         ]
     },
-    "demonstrate": {
-        rank: 3003,
-        level: "B1",
-        definition: "to show or prove by example",
-        examples: [
-            "The teacher demonstrated how to solve the problem.",
-            "His work demonstrates his talent."
-        ]
-    },
-    "establish": {
-        rank: 3004,
-        level: "B1",
-        definition: "to set up or create",
-        examples: [
-            "They established a new company in 2020.",
-            "We need to establish clear rules."
-        ]
-    },
     "fundamental": {
         rank: 3005,
         level: "B2",
@@ -92,15 +74,6 @@ const ADVANCED_WORDS = {
         examples: [
             "10 meters is equivalent to about 33 feet.",
             "The two products are equivalent."
-        ]
-    },
-    "numerous": {
-        rank: 3011,
-        level: "B1",
-        definition: "very many",
-        examples: [
-            "There are numerous ways to solve this problem.",
-            "She has numerous awards."
         ]
     },
     "substantial": {
@@ -219,20 +192,25 @@ function isAdvancedWord(word) {
 }
 
 // 獲取單詞信息 (支援本地詞庫 + wordlist)
+// 只返回 B2+ 級別的詞彙 (中階及以上學習者需要)
 function getWordInfo(word) {
     const lowerWord = word.toLowerCase();
     // 優先從本地詞庫 (有完整定義)
     if (ADVANCED_WORDS[lowerWord]) {
         return ADVANCED_WORDS[lowerWord];
     }
-    // 從 wordlist 獲取基本信息 (rank 和 tier)
+    // 從 wordlist 獲取基本信息
+    // wordlist.json 是 3000-5000+ 高頻詞
+    // 只返回真正的進階單詞 (不包含 A1-B1 常用詞)
     if (WORDLIST && WORDLIST[lowerWord]) {
         const rank = WORDLIST[lowerWord];
+        // 3000-4999: B2 intermediate level
+        // 5000+: C1-C2 advanced level
         const tier = rank >= 5000 ? 2 : 1;
         return {
             rank: rank,
             tier: tier,
-            level: tier === 1 ? 'B2-C1' : 'C1-C2',
+            level: tier === 1 ? 'B2' : 'C1',
             definition: '',
             examples: []
         };
