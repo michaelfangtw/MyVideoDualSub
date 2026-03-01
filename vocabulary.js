@@ -297,7 +297,16 @@ function createTooltipElement(word) {
     return tooltip;
 }
 
+// 判斷單詞是否為 B2 級別或以上
+function isB2OrAbove(level) {
+    if (!level) return false;
+    // level 格式: "B1", "B2", "C1", "C2", "B2-C1", "C1-C2" 等
+    return level.includes('B2') || level.includes('C1') || level.includes('C2');
+}
+
 // 標記和處理文本中的高級單詞
+// 只標記 B2 及以上級別 (中階及以上學習者需要關注)
+// B1 及以下不標記
 function markAdvancedWords(text) {
     if (!text) return text;
 
@@ -305,15 +314,15 @@ function markAdvancedWords(text) {
         if (isAdvancedWord(match)) {
             const word = match.toLowerCase();
             const wordInfo = getWordInfo(word);
+            if (!wordInfo || !wordInfo.level) return match;
+
+            // 只標記 B2 以上級別的單詞
+            if (!isB2OrAbove(wordInfo.level)) return match;
+
             const wiktionaryUrl = `https://en.wiktionary.org/wiki/${encodeURIComponent(word)}`;
 
-            // Tier 1 (3000-5000): ** 雙星 - Advanced (B2-C1)
-            // Tier 2 (5000+): * 單星 - Expert (C1-C2)
-            const isTier2 = wordInfo && wordInfo.rank >= 5000;
-            const mark = isTier2 ? '*' : '**';
-            const tier = isTier2 ? 'tier2' : 'tier1';
-
-            return `<span class="advanced-word ${tier}" data-word="${word}" title="Advanced word (${isTier2 ? 'Expert *' : 'Advanced **'})" onclick="window.open('${wiktionaryUrl}', '_blank')">${match}${mark}</span>`;
+            // 所有 B2+ 單詞都用 * 標記 (中階及以上學習者需關注)
+            return `<span class="advanced-word tier1" data-word="${word}" title="Level: ${wordInfo.level}" onclick="window.open('${wiktionaryUrl}', '_blank')">${match}*</span>`;
         }
         return match;
     });
@@ -371,6 +380,7 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         isAdvancedWord,
         getWordInfo,
+        isB2OrAbove,
         createTooltipElement,
         markAdvancedWords,
         initializeTooltips,

@@ -450,41 +450,48 @@ function updateSubtitleDisplay(c) {
 }
 
 // Mark advanced words in English subtitles (using vocabulary.js)
-// This function delegates to vocabulary.js which handles:
-// - Local ADVANCED_WORDS (21 words with full definitions)  
-// - External wordlist.json (998+ words, 3000-5000 COCA range)
-// - Tooltip hover display with examples and Wiktionary links
+// Only marks B2 and above (intermediate+ level for learners)
+// B1 and below are not marked
 function markAdvancedWords(text) {
-    // Delegate to vocabulary.js implementation if fully loaded
+    if (!text || typeof text !== 'string') return text;
+
+    // Helper: check if level is B2 or above
+    const isB2Plus = (level) => {
+        if (!level) return false;
+        // level formats: "B1", "B2", "C1", "C2", "B2-C1", "C1-C2", etc.
+        return level.includes('B2') || level.includes('C1') || level.includes('C2');
+    };
+
+    // Use vocabulary.js if available
     if (typeof isAdvancedWord === 'function' && typeof getWordInfo === 'function') {
-        // Use vocabulary.js full implementation
-        if (!text || typeof text !== 'string') return text;
-        
         return text.replace(/\b([a-z'-]+)\b/gi, (match) => {
             if (isAdvancedWord(match)) {
                 const word = match.toLowerCase();
                 const wordInfo = getWordInfo(word);
-                const isTier2 = wordInfo && wordInfo.rank && wordInfo.rank >= 5000;
-                const mark = isTier2 ? '*' : '**';
-                const tier = isTier2 ? 'tier2' : 'tier1';
+                if (!wordInfo || !wordInfo.level) return match;
+
+                // Only mark B2+
+                if (!isB2Plus(wordInfo.level)) return match;
+
                 const wiktionaryUrl = `https://en.wiktionary.org/wiki/${encodeURIComponent(word)}`;
-                return `<span class="advanced-word ${tier}" data-word="${word}" title="Advanced word (${isTier2 ? 'Expert *' : 'Advanced **'})" onclick="window.open('${wiktionaryUrl}', '_blank')">${match}${mark}</span>`;
+                return `<span class="advanced-word tier1" data-word="${word}" title="Level: ${wordInfo.level}" onclick="window.open('${wiktionaryUrl}', '_blank')">${match}*</span>`;
             }
             return match;
         });
     }
 
-    // Fallback: mark only local ADVANCED_WORDS
-    if (!text || typeof text !== 'string') return text;
+    // Fallback: mark only B2+ local ADVANCED_WORDS (when vocabulary.js fails to load)
     return text.replace(/\b([a-z'-]+)\b/gi, (match) => {
         if (typeof ADVANCED_WORDS !== 'undefined' && ADVANCED_WORDS.hasOwnProperty(match.toLowerCase())) {
             const word = match.toLowerCase();
             const info = ADVANCED_WORDS[word];
-            const isTier2 = info && info.rank >= 5000;
-            const mark = isTier2 ? '*' : '**';
-            const tier = isTier2 ? 'tier2' : 'tier1';
+            if (!info || !info.level) return match;
+
+            // Only mark B2+
+            if (!isB2Plus(info.level)) return match;
+
             const wiktionaryUrl = `https://en.wiktionary.org/wiki/${encodeURIComponent(word)}`;
-            return `<span class="advanced-word ${tier}" data-word="${word}" title="Advanced word" onclick="window.open('${wiktionaryUrl}', '_blank')">${match}${mark}</span>`;
+            return `<span class="advanced-word tier1" data-word="${word}" title="Level: ${info.level}" onclick="window.open('${wiktionaryUrl}', '_blank')">${match}*</span>`;
         }
         return match;
     });
