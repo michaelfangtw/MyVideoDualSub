@@ -162,6 +162,7 @@ const ADVANCED_WORDS = {
 // 全局詞頻資料
 let WORDLIST = null;
 let BASIC_VOCAB = null;
+let CEFR_VOCAB = null;  // Cambridge CEFR B2-C1 詞彙
 
 // 異步載入 wordlist.json (3000-5000 進階詞)
 function loadWordlist() {
@@ -193,35 +194,88 @@ function loadBasicVocab() {
         });
 }
 
-// 同時載入兩個詞庫
+// 異步載入 cefr_vocabulary.json (Cambridge CEFR B2-C1 詞彙)
+function loadCefrVocab() {
+    if (CEFR_VOCAB) return Promise.resolve();
+    return fetch(chrome.runtime.getURL('cefr_vocabulary.json'))
+        .then(r => r.json())
+        .then(data => {
+            CEFR_VOCAB = data.words || {};
+            const b2Count = Object.keys(CEFR_VOCAB.B2 || {}).length;
+            const c1Count = Object.keys(CEFR_VOCAB.C1 || {}).length;
+            console.log('[Vocabulary] Loaded', b2Count, 'B2 and', c1Count, 'C1 words from CEFR');
+        })
+        .catch(e => {
+            console.warn('[Vocabulary] Failed to load CEFR vocabulary:', e);
+            CEFR_VOCAB = { B2: {}, C1: {} };
+        });
+}
+
+// 同時載入所有詞庫
 function loadAllVocab() {
-    return Promise.all([loadWordlist(), loadBasicVocab()]);
+    return Promise.all([loadWordlist(), loadBasicVocab(), loadCefrVocab()]);
 }
 
 // 判斷單詞是否是進階單字
-// 核心邏輯：basicwordlist.json (COCA) 中的詞 = 基本詞 (不標記)
-//          其他詞 = 進階詞 (標記)
+// 使用 Cambridge CEFR B2-C1 詞彙標準進行標記
 function isAdvancedWord(word) {
     const lowerWord = word.toLowerCase();
 
-    // 如果在基本詞彙 (COCA - basicwordlist.json) 中 → 不標記
-    if (BASIC_VOCAB && BASIC_VOCAB.hasOwnProperty(lowerWord)) {
-        return false;
+    // 1. 檢查本地進階詞庫 ADVANCED_WORDS (14 個手動定義的詞)
+    if (ADVANCED_WORDS.hasOwnProperty(lowerWord)) {
+        return true;
     }
 
-    // 其他所有詞都是進階詞 (標記)
-    return true;
+    // 2. 檢查 Cambridge CEFR 詞彙 (13644 B2 + 5812 C1 詞)
+    if (CEFR_VOCAB) {
+        const b2Words = CEFR_VOCAB.B2 || {};
+        const c1Words = CEFR_VOCAB.C1 || {};
+
+        if (b2Words.hasOwnProperty(lowerWord) || c1Words.hasOwnProperty(lowerWord)) {
+            return true;
+        }
+    }
+
+    // 不在進階詞彙中 → 不標記
+    return false;
 }
 
-// 獲取單詞信息 (本地進階詞庫)
-// 只返回 ADVANCED_WORDS 中有定義的詞彙
+// 獲取單詞信息 (本地詞庫 + CEFR 詞彙)
 function getWordInfo(word) {
     const lowerWord = word.toLowerCase();
-    // 從本地詞庫獲取完整定義 (有級別、定義、例句)
+
+    // 1. 從本地詞庫獲取完整定義 (有級別、定義、例句)
     if (ADVANCED_WORDS[lowerWord]) {
         return ADVANCED_WORDS[lowerWord];
     }
-    // 其他進階詞沒有詳細信息，返回通用進階詞標籤
+
+    // 2. 從 CEFR 詞彙獲取級別信息
+    if (CEFR_VOCAB) {
+        const b2Words = CEFR_VOCAB.B2 || {};
+        const c1Words = CEFR_VOCAB.C1 || {};
+
+        if (b2Words.hasOwnProperty(lowerWord)) {
+            return {
+                rank: b2Words[lowerWord],
+                tier: 1,
+                level: 'B2',
+                definition: 'Cambridge B2 - Upper Intermediate',
+                examples: []
+            };
+        }
+
+        if (c1Words.hasOwnProperty(lowerWord)) {
+            return {
+                rank: c1Words[lowerWord],
+                tier: 2,
+                level: 'C1',
+                definition: 'Cambridge C1 - Advanced',
+                examples: []
+            };
+        }
+    }
+
+    // 3. 預設回傳
     return {
         rank: 0,
         tier: 1,

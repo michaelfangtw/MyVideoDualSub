@@ -9,7 +9,7 @@ let tooltipInitialized = false;
 let translatorApiType = 'microsoft'; // 預設為 Microsoft
 
 // 設定狀態變數 (預設值)
-let settings = { subtitleMode: 'eng', advancedWordMarking: false };
+let settings = { subtitleMode: 'eng', advancedWordMarking: true };
 
 // --- 1. 初始化與設定讀取 ---
 function initialize() {
