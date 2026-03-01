@@ -36,7 +36,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["wordlist.json", "basicwordlist.json"],
+      "resources": ["wordlist.json", "basicwordlist.json", "cefr_vocabulary.json"],
       "matches": ["<all_urls>"]
     }
   ]
