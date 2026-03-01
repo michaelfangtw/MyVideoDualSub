@@ -449,12 +449,42 @@ function updateSubtitleDisplay(c) {
     }
 }
 
-// Mark advanced words in English subtitles
+// Mark advanced words in English subtitles (using vocabulary.js)
+// This function delegates to vocabulary.js which handles:
+// - Local ADVANCED_WORDS (21 words with full definitions)  
+// - External wordlist.json (998+ words, 3000-5000 COCA range)
+// - Tooltip hover display with examples and Wiktionary links
 function markAdvancedWords(text) {
+    // Delegate to vocabulary.js implementation if fully loaded
+    if (typeof isAdvancedWord === 'function' && typeof getWordInfo === 'function') {
+        // Use vocabulary.js full implementation
+        if (!text || typeof text !== 'string') return text;
+        
+        return text.replace(/\b([a-z'-]+)\b/gi, (match) => {
+            if (isAdvancedWord(match)) {
+                const word = match.toLowerCase();
+                const wordInfo = getWordInfo(word);
+                const isTier2 = wordInfo && wordInfo.rank && wordInfo.rank >= 5000;
+                const mark = isTier2 ? '*' : '**';
+                const tier = isTier2 ? 'tier2' : 'tier1';
+                const wiktionaryUrl = `https://en.wiktionary.org/wiki/${encodeURIComponent(word)}`;
+                return `<span class="advanced-word ${tier}" data-word="${word}" title="Advanced word (${isTier2 ? 'Expert *' : 'Advanced **'})" onclick="window.open('${wiktionaryUrl}', '_blank')">${match}${mark}</span>`;
+            }
+            return match;
+        });
+    }
+
+    // Fallback: mark only local ADVANCED_WORDS
     if (!text || typeof text !== 'string') return text;
-    return text.replace(/([a-z'-]+)/gi, (match) => {
+    return text.replace(/\b([a-z'-]+)\b/gi, (match) => {
         if (typeof ADVANCED_WORDS !== 'undefined' && ADVANCED_WORDS.hasOwnProperty(match.toLowerCase())) {
-            return `<span class="advanced-word" data-word="${match.toLowerCase()}" title="Advanced word">${match}*</span>`;
+            const word = match.toLowerCase();
+            const info = ADVANCED_WORDS[word];
+            const isTier2 = info && info.rank >= 5000;
+            const mark = isTier2 ? '*' : '**';
+            const tier = isTier2 ? 'tier2' : 'tier1';
+            const wiktionaryUrl = `https://en.wiktionary.org/wiki/${encodeURIComponent(word)}`;
+            return `<span class="advanced-word ${tier}" data-word="${word}" title="Advanced word" onclick="window.open('${wiktionaryUrl}', '_blank')">${match}${mark}</span>`;
         }
         return match;
     });
