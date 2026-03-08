@@ -3,84 +3,517 @@
 <head>
   <meta charset="UTF-8">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;500;600;700&display=swap');
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { width: 380px; font-family: "Microsoft JhengHei", sans-serif; background: #f9f9f9; }
 
-    .tabs { display: flex; background: white; border-bottom: 1px solid #ddd; }
-    .tab-btn { flex: 1; padding: 12px; text-align: center; cursor: pointer; border: none; font-size: 13px; color: #666; background: white; transition: 0.2s; }
-    .tab-btn.active { color: #2196F3; border-bottom: 2px solid #2196F3; font-weight: 500; }
-    .tab-btn:hover { background: #f5f5f5; }
+    body {
+      width: 380px;
+      font-family: 'Sora', 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+      color: #e0e6ed;
+      overflow: hidden;
+    }
 
-    .tab-content { display: none; padding: 15px; }
-    .tab-content.active { display: block; }
+    /* ===== GLASS-MORPHISM & GRADIENT BASE ===== */
+    .glass {
+      background: rgba(255, 255, 255, 0.06);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
 
-    /* 字幕模式頁 */
-    h3 { margin: 0 0 15px 0; color: #333; text-align: center; font-size: 16px; }
-    .radio-group { background: white; border-radius: 8px; padding: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .radio-option { display: flex; align-items: center; padding: 10px; cursor: pointer; transition: 0.2s; border-radius: 6px; }
-    .radio-option:hover { background-color: #f0f0f0; }
-    .radio-option input[type="radio"] { margin-right: 12px; accent-color: #2196F3; cursor: pointer; }
-    .label-txt { font-size: 14px; color: #333; }
-    .default-badge { color: #999; font-size: 12px; margin-left: 4px; }
-    .recommend-badge { color: #ff9800; font-size: 11px; margin-left: 4px; font-weight: bold; }
-    .new-badge { color: #f44336; font-size: 10px; margin-left: 4px; font-weight: bold; }
-    .dual-label { color: #2196F3; font-weight: 500; }
+    /* ===== TAB NAVIGATION ===== */
+    .tabs {
+      display: flex;
+      background: linear-gradient(135deg, rgba(20, 25, 35, 0.9), rgba(30, 40, 55, 0.8));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 0 8px;
+      gap: 4px;
+      position: relative;
+    }
 
-    /* API Key 設定頁 */
-    .section { margin-bottom: 15px; }
-    .section-title { font-size: 13px; color: #333; font-weight: bold; margin-bottom: 8px; }
-    .section-desc { font-size: 12px; color: #666; line-height: 1.5; margin-bottom: 8px; }
-    .section-link { color: #2196F3; text-decoration: none; cursor: pointer; }
-    .section-link:hover { text-decoration: underline; }
+    .tab-btn {
+      flex: 1;
+      padding: 14px 12px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: #a0aab8;
+      background: transparent;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
 
-    .step { background: white; padding: 10px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid #2196F3; }
-    .step-title { font-weight: bold; font-size: 12px; color: #333; margin-bottom: 4px; }
-    .step-content { font-size: 11px; color: #666; line-height: 1.5; }
+    .tab-btn::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, #00d4ff, #0099ff);
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-    input[type="password"], input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; margin-bottom: 8px; }
-    input:focus { outline: none; border-color: #2196F3; box-shadow: 0 0 4px rgba(33, 150, 243, 0.3); }
+    .tab-btn:hover {
+      color: #d0dae8;
+      background: rgba(255, 255, 255, 0.03);
+    }
 
-    .button-group { display: flex; gap: 8px; }
-    button { flex: 1; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; transition: 0.2s; }
-    .btn-primary { background: #2196F3; color: white; }
-    .btn-primary:hover { background: #1976D2; }
-    .btn-secondary { background: #f0f0f0; color: #333; }
-    .btn-secondary:hover { background: #e0e0e0; }
+    .tab-btn.active {
+      color: #00d4ff;
+    }
 
-    .status-msg { font-size: 11px; padding: 8px; border-radius: 4px; text-align: center; margin-top: 8px; }
-    .status-msg.success { background: #c8e6c9; color: #2e7d32; }
-    .status-msg.error { background: #ffcdd2; color: #c62828; }
-    .status-msg.info { background: #bbdefb; color: #1565c0; }
+    .tab-btn.active::before {
+      transform: scaleX(1);
+    }
+
+    .tab-content {
+      display: none;
+      padding: 20px;
+      max-height: 480px;
+      overflow-y: auto;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeInContent 0.5s ease-out;
+    }
+
+    @keyframes fadeInContent {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* ===== SCROLLBAR STYLING ===== */
+    .tab-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .tab-content::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .tab-content::-webkit-scrollbar-thumb {
+      background: rgba(0, 212, 255, 0.3);
+      border-radius: 3px;
+    }
+
+    .tab-content::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 212, 255, 0.5);
+    }
+
+    /* ===== TYPOGRAPHY ===== */
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 18px;
+      background: linear-gradient(135deg, #00d4ff, #0099ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ===== RADIO GROUP STYLING ===== */
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      padding: 12px 14px;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .radio-option::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 153, 255, 0.05));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .radio-option:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(0, 212, 255, 0.2);
+    }
+
+    .radio-option:hover::before {
+      opacity: 1;
+    }
+
+    .radio-option input[type="radio"] {
+      width: 18px;
+      height: 18px;
+      margin-right: 12px;
+      cursor: pointer;
+      accent-color: #00d4ff;
+      flex-shrink: 0;
+    }
+
+    .label-txt {
+      font-size: 14px;
+      color: #d0dae8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .default-badge, .recommend-badge, .new-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .default-badge {
+      background: rgba(100, 120, 140, 0.3);
+      color: #90aab8;
+    }
+
+    .recommend-badge {
+      background: linear-gradient(135deg, rgba(255, 193, 7, 0.25), rgba(255, 152, 0, 0.15));
+      color: #ffd54f;
+    }
+
+    .new-badge {
+      background: linear-gradient(135deg, rgba(255, 71, 87, 0.25), rgba(244, 67, 54, 0.15));
+      color: #ff7b82;
+    }
+
+    /* ===== SECTION STYLING ===== */
+    .section {
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #90aab8;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .section-desc {
+      font-size: 12px;
+      color: #7a8694;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .section-link {
+      color: #00d4ff;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.3s ease;
+      font-weight: 500;
+    }
+
+    .section-link:hover {
+      color: #00f0ff;
+      text-decoration: underline;
+    }
+
+    /* ===== SELECT STYLING ===== */
+    select {
+      width: 100%;
+      padding: 11px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      color: #d0dae8;
+      font-size: 12px;
+      font-family: 'Sora', sans-serif;
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: all 0.3s ease;
+    }
+
+    select:hover {
+      border-color: rgba(0, 212, 255, 0.3);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    select:focus {
+      outline: none;
+      border-color: rgba(0, 212, 255, 0.6);
+      box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+    }
+
+    select option {
+      background: #1a1f2e;
+      color: #d0dae8;
+    }
+
+    /* ===== INPUT STYLING ===== */
+    input[type="password"], input[type="text"] {
+      width: 100%;
+      padding: 11px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      color: #d0dae8;
+      font-size: 12px;
+      font-family: 'Sora', sans-serif;
+      margin-bottom: 12px;
+      transition: all 0.3s ease;
+    }
+
+    input::placeholder {
+      color: #5a6270;
+    }
+
+    input:hover {
+      border-color: rgba(0, 212, 255, 0.2);
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    input:focus {
+      outline: none;
+      border-color: rgba(0, 212, 255, 0.5);
+      box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* ===== BUTTON GROUP ===== */
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    button {
+      flex: 1;
+      padding: 11px 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00d4ff, #0099ff);
+      color: #0f1419;
+      box-shadow: 0 4px 16px rgba(0, 212, 255, 0.25);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 8px 24px rgba(0, 212, 255, 0.35);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #d0dae8;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    /* ===== STATUS MESSAGES ===== */
+    .status-msg {
+      font-size: 12px;
+      padding: 11px 14px;
+      border-radius: 8px;
+      text-align: center;
+      margin-top: 10px;
+      animation: slideInUp 0.4s ease-out;
+      font-weight: 500;
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    .status-msg.success {
+      background: rgba(76, 175, 80, 0.15);
+      color: #4caf50;
+      border: 1px solid rgba(76, 175, 80, 0.3);
+    }
+
+    .status-msg.error {
+      background: rgba(244, 67, 54, 0.15);
+      color: #ff7b82;
+      border: 1px solid rgba(244, 67, 54, 0.3);
+    }
+
+    .status-msg.info {
+      background: rgba(0, 212, 255, 0.15);
+      color: #00d4ff;
+      border: 1px solid rgba(0, 212, 255, 0.3);
+    }
+
+    /* ===== STEP STYLING ===== */
+    .step {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 12px 14px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border-left: 3px solid #00d4ff;
+      transition: all 0.3s ease;
+    }
+
+    .step:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .step-title {
+      font-weight: 600;
+      font-size: 12px;
+      color: #d0dae8;
+      margin-bottom: 6px;
+    }
+
+    .step-content {
+      font-size: 11px;
+      color: #90aab8;
+      line-height: 1.6;
+    }
+
+    /* ===== INFO BOX ===== */
+    .info-box {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(0, 153, 255, 0.05));
+      padding: 12px 14px;
+      border-radius: 8px;
+      margin-top: 12px;
+      border-left: 3px solid #00d4ff;
+    }
+
+    .info-box-title {
+      font-weight: 600;
+      color: #00d4ff;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .info-box-content {
+      font-size: 11px;
+      color: #90aab8;
+      line-height: 1.6;
+    }
+
+    /* ===== DIVIDERS ===== */
+    hr {
+      margin: 16px 0;
+      border: none;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    /* ===== LOADING ANIMATION ===== */
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      animation: pulse 2s infinite;
+    }
+
+    /* ===== REGION STATUS ===== */
+    #regionStatus {
+      font-size: 11px;
+      margin-top: 6px;
+      min-height: 18px;
+    }
   </style>
 </head>
 <body>
-  <!-- 標籤頁 -->
+  <!-- NAVIGATION TABS -->
   <div class="tabs">
     <button type="button" class="tab-btn active" data-tab="modes">字幕模式</button>
-    <button type="button" class="tab-btn" data-tab="settings">Microsoft Translator 設定</button>
+    <button type="button" class="tab-btn" data-tab="settings">翻譯設定</button>
   </div>
 
-  <!-- 字幕模式頁 -->
+  <!-- SUBTITLE MODES TAB -->
   <div id="modes" class="tab-content active">
-    <h3>myVideo 字幕模式</h3>
+    <h3>字幕模式</h3>
     <div class="radio-group">
-      <label class="radio-option"><input type="radio" name="mode" value="disabled"><span class="label-txt">關閉外掛</span></label>
-      <label class="radio-option"><input type="radio" name="mode" value="eng"><span class="label-txt">英文 <span class="default-badge">(預設)</span> <span class="recommend-badge">推薦</span></span></label>
-      <label class="radio-option"><input type="radio" name="mode" value="zho"><span class="label-txt">繁體中文</span></label>
-      <label class="radio-option"><input type="radio" name="mode" value="zho_eng"><span class="label-txt dual-label">繁體中文 / 英文</span></label>
-      <label class="radio-option"><input type="radio" name="mode" value="eng_zho"><span class="label-txt dual-label">英文 / 繁體中文</span></label>
-      <label class="radio-option"><input type="radio" name="mode" value="eng_zho_translate"><span class="label-txt dual-label">英/中(AI翻譯,by Microsoft)<span class="new-badge">NEW</span></span></label>
+      <label class="radio-option">
+        <input type="radio" name="mode" value="disabled">
+        <span class="label-txt">關閉外掛</span>
+      </label>
+      <label class="radio-option">
+        <input type="radio" name="mode" value="eng">
+        <span class="label-txt">
+          英文
+          <span class="default-badge">預設</span>
+          <span class="recommend-badge">推薦</span>
+        </span>
+      </label>
+      <label class="radio-option">
+        <input type="radio" name="mode" value="zho">
+        <span class="label-txt">繁體中文</span>
+      </label>
+      <label class="radio-option">
+        <input type="radio" name="mode" value="zho_eng">
+        <span class="label-txt">繁體中文 / 英文</span>
+      </label>
+      <label class="radio-option">
+        <input type="radio" name="mode" value="eng_zho">
+        <span class="label-txt">英文 / 繁體中文</span>
+      </label>
+      <label class="radio-option">
+        <input type="radio" name="mode" value="eng_zho_translate">
+        <span class="label-txt">
+          英/中 (AI翻譯)
+          <span class="new-badge">New</span>
+        </span>
+      </label>
     </div>
   </div>
 
-  <!-- 設定頁 -->
+  <!-- TRANSLATOR SETTINGS TAB -->
   <div id="settings" class="tab-content">
-    <h3>Microsoft Translator 設定</h3>
+    <h3>Microsoft Translator</h3>
 
-    <!-- 地區設定 -->
+    <!-- REGION SELECTION -->
     <div class="section">
-      <div class="section-title">🌍 申請區域 (Select Region)</div>
-      <select id="regionSelect" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; margin-bottom: 8px;">
+      <div class="section-title">🌍 申請區域</div>
+      <select id="regionSelect">
         <option value="eastasia">東亞 (East Asia) - 推薦</option>
         <option value="southeastasia">東南亞 (Southeast Asia)</option>
         <option value="eastus">美國東部 (East US)</option>
@@ -100,30 +533,30 @@
       <div id="regionStatus"></div>
     </div>
 
-    <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
+    <hr>
 
-    <!-- API Key 輸入 -->
+    <!-- API KEY INPUT -->
     <div class="section">
-      <div class="section-title">1️⃣ 輸入 API Key</div>
+      <div class="section-title">1️⃣ API Key</div>
       <input type="password" id="apiKey" placeholder="貼上你的 API Key...">
       <div class="button-group">
-        <button type="button" class="btn-primary" id="saveButton">儲存 API Key</button>
-        <button type="button" class="btn-secondary" id="testButton">測試連線</button>
+        <button type="button" class="btn-primary" id="saveButton">儲存</button>
+        <button type="button" class="btn-secondary" id="testButton">測試</button>
       </div>
       <div id="status"></div>
     </div>
 
-    <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
+    <hr>
 
-    <!-- 申請說明 -->
+    <!-- INSTRUCTIONS -->
     <div class="section">
-      <div class="section-title">📋 如何取得 API Key？</div>
+      <div class="section-title">📋 如何取得 API Key?</div>
 
       <div class="step">
         <div class="step-title">步驟 1：建立 Azure 帳號</div>
         <div class="step-content">
-          前往 <a class="section-link" href="https://portal.azure.com/" target="_blank" rel="noopener">Microsoft Azure 入口</a>
-          <br>點擊「建立免費帳戶」，完成註冊（需要信用卡驗證，但不會扣款）
+          前往 <a class="section-link" href="https://portal.azure.com/" target="_blank" rel="noopener">Microsoft Azure</a>
+          <br>點擊「建立免費帳戶」，完成註冊
         </div>
       </div>
 
@@ -131,7 +564,7 @@
         <div class="step-title">步驟 2：建立 Translator 資源</div>
         <div class="step-content">
           1. 點擊 「+ 建立資源」<br>
-          2. 搜尋並選擇「Translator」<br>
+          2. 搜尋「Translator」<br>
           3. 點擊「建立」
         </div>
       </div>
@@ -139,27 +572,26 @@
       <div class="step">
         <div class="step-title">步驟 3：設定資源</div>
         <div class="step-content">
-          • 資源群組：建立新的 (名稱隨意)<br>
-          • 區域：<strong>東亞 (East Asia)</strong> ⚠️ 重要<br>
-          • 定價層：<strong>Free</strong> ✅<br>
-          • 名稱：隨意 (如「MyVideoTranslator」)
+          • 資源群組：建立新的<br>
+          • 區域：<strong>東亞</strong> ⚠️<br>
+          • 定價層：<strong>Free</strong> ✅
         </div>
       </div>
 
       <div class="step">
         <div class="step-title">步驟 4：複製 API Key</div>
         <div class="step-content">
-          1. 資源建立完成後，進入資源<br>
-          2. 左邊菜單 → 「Keys and Endpoint」<br>
-          3. 複製 <strong>Key 1</strong> 或 <strong>Key 2</strong><br>
-          4. 貼到上面的輸入框，點「儲存」
+          1. 進入資源<br>
+          2. 左邊菜單 → 「Keys」<br>
+          3. 複製 <strong>Key 1</strong><br>
+          4. 貼到上面，點「儲存」
         </div>
       </div>
 
-      <div style="background: #e3f2fd; padding: 10px; border-radius: 4px; margin-top: 10px;">
-        <div style="font-size: 11px; color: #1565c0; line-height: 1.5;">
-          <strong>💡 免費額度：</strong> 每月 200 萬字<br>
-          足夠看 100+ 部電影字幕！
+      <div class="info-box">
+        <div class="info-box-title">💡 免費額度</div>
+        <div class="info-box-content">
+          每月 200 萬字 = 100+ 部電影字幕
         </div>
       </div>
     </div>
